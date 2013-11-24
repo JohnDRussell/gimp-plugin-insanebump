@@ -70,7 +70,6 @@ static gint idle_callback(gpointer data)
 {
    if ((update_preview) && (!is_3D_preview_active()))
    {
-        // g_printf("idle_callback\n");
         preview_redraw();
    }
    return(1);
@@ -80,56 +79,48 @@ static void new_width_changed(GtkWidget *widget, gpointer data)
 {
    local_vals.newWidth = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget));
    update_preview = 1;
-   // g_printf("new_width_changed\n");
 }
 
 static void def_specular_changed(GtkWidget *widget, gpointer data)
 {
    local_vals.defSpecular = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget));
    update_preview = 1;
-   // g_printf("def_specular_changed\n");
 }
 
 static void depth_changed(GtkWidget *widget, gpointer data)
 {
    local_vals.Depth = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget));
    update_preview = 1;
-   // g_printf("depth_changed\n");
 }
 
 static void large_detail_size_changed(GtkWidget *widget, gpointer data)
 {
    local_vals.LargeDetails = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget));
    update_preview = 1;
-   // g_printf("large_detail_size_changed\n");
 }
 
 static void medium_detail_intensity_changed(GtkWidget *widget, gpointer data)
 {
    local_vals.MediumDetails = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget));
    update_preview = 1;
-   // g_printf("medium_detail_intensity_changed\n");
 }
 
 static void small_detail_intensity_changed(GtkWidget *widget, gpointer data)
 {
    local_vals.SmallDetails = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget));
    update_preview = 1;
-   // g_printf("small_detail_intensity_changed\n");
 }
 
 static void shape_recognition_changed(GtkWidget *widget, gpointer data)
 {
    local_vals.ShapeRecog = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget));
    update_preview = 1;
-   // g_printf("shape_recognition_changed\n");
 }
 
 static void ao_changed(GtkWidget *widget, gpointer data)
 {
    local_vals.ao = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget));
    update_preview = 1;
-   // g_printf("ao_changed\n");
 }
 
 static void remlightbtn_clicked(GtkWidget *widget, gpointer data)
@@ -146,7 +137,6 @@ static void remlightbtn_clicked(GtkWidget *widget, gpointer data)
         gtk_button_set_label(GTK_BUTTON(widget), "No");
     }
     update_preview = 1;
-    // g_printf("remlightbtn_clicked\n");
 }
 
 static void upscale_HD_clicked(GtkWidget *widget, gpointer data)
@@ -163,7 +153,6 @@ static void upscale_HD_clicked(GtkWidget *widget, gpointer data)
         gtk_button_set_label(GTK_BUTTON(widget), "No");
     }
     update_preview = 1;
-    // g_printf("upscale_HD_clicked\n");
 }
 
 static void tile_clicked(GtkWidget *widget, gpointer data)
@@ -180,7 +169,6 @@ static void tile_clicked(GtkWidget *widget, gpointer data)
         gtk_button_set_label(GTK_BUTTON(widget), "No");
     }
     update_preview = 1;
-    // g_printf("tile_clicked\n");
 }
 
 static void edge_enhancing_specular_clicked(GtkWidget *widget, gpointer data)
@@ -197,7 +185,6 @@ static void edge_enhancing_specular_clicked(GtkWidget *widget, gpointer data)
         gtk_button_set_label(GTK_BUTTON(widget), "No");
     }
     update_preview = 1;
-    // g_printf("edge_enhancing_specular_clicked\n");
 }
 
 static void smooth_step_clicked(GtkWidget *widget, gpointer data)
@@ -214,7 +201,6 @@ static void smooth_step_clicked(GtkWidget *widget, gpointer data)
         gtk_button_set_label(GTK_BUTTON(widget), "No");
     }
     update_preview = 1;
-    // g_printf("smooth_step_clicked\n");
 }
 
 static void noise_clicked(GtkWidget *widget, gpointer data)
@@ -231,7 +217,6 @@ static void noise_clicked(GtkWidget *widget, gpointer data)
         gtk_button_set_label(GTK_BUTTON(widget), "No");
     }
     update_preview = 1;
-    // g_printf("noise_clicked\n");
 }
 
 static void invert_height_map_clicked(GtkWidget *widget, gpointer data)
@@ -248,7 +233,6 @@ static void invert_height_map_clicked(GtkWidget *widget, gpointer data)
         gtk_button_set_label(GTK_BUTTON(widget), "No");
     }
     update_preview = 1;
-    // g_printf("invert_height_map_clicked\n");
 }
 
 static void insanebump_dialog_response(GtkWidget *widget, gint response_id,
@@ -472,7 +456,7 @@ gint InsaneBumpDialog(GimpDrawable *drawable,
 
     gimp_ui_init(szBinary, TRUE);
 
-    dialog = gimp_dialog_new("Insane Bump 1.0.2", szBinary,
+    dialog = gimp_dialog_new(NAME_AND_VERSION, szBinary,
                              0, 0, gimp_standard_help_func, 0,
                              GTK_STOCK_CLOSE, GTK_RESPONSE_CANCEL,
                              GTK_STOCK_EXECUTE, GTK_RESPONSE_OK,
@@ -615,13 +599,6 @@ gint InsaneBumpDialog(GimpDrawable *drawable,
      */
     CreateInteger255SpinButton(table, 15, (GCallback *)&ao_changed, "ao", vals->ao, 0);
 
-     //   /**
-     //    * Preview
-     //    * [*********Yes***********]
-     //    * button
-     //    */
-     //   CreateToggleButton(table, 15, (GCallback *)&preview_clicked, "Preview", vals->prev);
-
     progress = gtk_progress_bar_new();
     gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR(progress), 0.0);
     table_attach_progress(GTK_TABLE(table), 0, 17, "Idle...", 0, 0.5,
@@ -631,7 +608,6 @@ gint InsaneBumpDialog(GimpDrawable *drawable,
     gtk_widget_show(dialog);
 
     update_preview = 1;
-    // g_printf("InsaneBumpDialog\n");
 
     gtk_timeout_add(100, idle_callback, drawable);
    
@@ -641,8 +617,6 @@ gint InsaneBumpDialog(GimpDrawable *drawable,
     
     _active = 'x';
     
-    // preview_redraw();
-
     gtk_main();
 
     return(runme);

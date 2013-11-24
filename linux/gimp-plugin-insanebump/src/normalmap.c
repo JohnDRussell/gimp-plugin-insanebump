@@ -34,6 +34,7 @@
 #include <stdlib.h>
 #include <malloc.h>
 #include <memory.h>
+#include <math.h>
 
 #include <libgimp/gimp.h>
 #include <libgimp/gimpui.h>

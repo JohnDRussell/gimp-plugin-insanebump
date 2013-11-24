@@ -110,8 +110,15 @@ normalmap.o: normalmap.c /usr/include/glib-2.0/glib.h \
  /usr/include/_G_config.h /usr/include/wchar.h \
  /usr/include/i386-linux-gnu/bits/stdio_lim.h \
  /usr/include/i386-linux-gnu/bits/sys_errlist.h /usr/include/memory.h \
- /usr/include/string.h /usr/include/gimp-2.0/libgimp/gimp.h \
- /usr/include/glib-2.0/glib-object.h \
+ /usr/include/string.h /usr/include/math.h \
+ /usr/include/i386-linux-gnu/bits/huge_val.h \
+ /usr/include/i386-linux-gnu/bits/huge_valf.h \
+ /usr/include/i386-linux-gnu/bits/huge_vall.h \
+ /usr/include/i386-linux-gnu/bits/inf.h \
+ /usr/include/i386-linux-gnu/bits/nan.h \
+ /usr/include/i386-linux-gnu/bits/mathdef.h \
+ /usr/include/i386-linux-gnu/bits/mathcalls.h \
+ /usr/include/gimp-2.0/libgimp/gimp.h /usr/include/glib-2.0/glib-object.h \
  /usr/include/glib-2.0/gobject/gbinding.h \
  /usr/include/glib-2.0/gobject/gobject.h \
  /usr/include/glib-2.0/gobject/gtype.h \
@@ -169,14 +176,7 @@ normalmap.o: normalmap.c /usr/include/glib-2.0/glib.h \
  /usr/include/gimp-2.0/libgimpconfig/gimpconfig-path.h \
  /usr/include/gimp-2.0/libgimpconfig/gimpscanner.h \
  /usr/include/gimp-2.0/libgimpconfig/gimpcolorconfig.h \
- /usr/include/gimp-2.0/libgimpmath/gimpmath.h /usr/include/math.h \
- /usr/include/i386-linux-gnu/bits/huge_val.h \
- /usr/include/i386-linux-gnu/bits/huge_valf.h \
- /usr/include/i386-linux-gnu/bits/huge_vall.h \
- /usr/include/i386-linux-gnu/bits/inf.h \
- /usr/include/i386-linux-gnu/bits/nan.h \
- /usr/include/i386-linux-gnu/bits/mathdef.h \
- /usr/include/i386-linux-gnu/bits/mathcalls.h \
+ /usr/include/gimp-2.0/libgimpmath/gimpmath.h \
  /usr/include/gimp-2.0/libgimpmath/gimpmatrix.h \
  /usr/include/gimp-2.0/libgimpmath/gimpmd5.h \
  /usr/include/gimp-2.0/libgimpmath/gimpvector.h \
@@ -1031,6 +1031,22 @@ normalmap.o: normalmap.c /usr/include/glib-2.0/glib.h \
 
 /usr/include/string.h:
 
+/usr/include/math.h:
+
+/usr/include/i386-linux-gnu/bits/huge_val.h:
+
+/usr/include/i386-linux-gnu/bits/huge_valf.h:
+
+/usr/include/i386-linux-gnu/bits/huge_vall.h:
+
+/usr/include/i386-linux-gnu/bits/inf.h:
+
+/usr/include/i386-linux-gnu/bits/nan.h:
+
+/usr/include/i386-linux-gnu/bits/mathdef.h:
+
+/usr/include/i386-linux-gnu/bits/mathcalls.h:
+
 /usr/include/gimp-2.0/libgimp/gimp.h:
 
 /usr/include/glib-2.0/glib-object.h:
@@ -1150,22 +1166,6 @@ normalmap.o: normalmap.c /usr/include/glib-2.0/glib.h \
 /usr/include/gimp-2.0/libgimpconfig/gimpcolorconfig.h:
 
 /usr/include/gimp-2.0/libgimpmath/gimpmath.h:
-
-/usr/include/math.h:
-
-/usr/include/i386-linux-gnu/bits/huge_val.h:
-
-/usr/include/i386-linux-gnu/bits/huge_valf.h:
-
-/usr/include/i386-linux-gnu/bits/huge_vall.h:
-
-/usr/include/i386-linux-gnu/bits/inf.h:
-
-/usr/include/i386-linux-gnu/bits/nan.h:
-
-/usr/include/i386-linux-gnu/bits/mathdef.h:
-
-/usr/include/i386-linux-gnu/bits/mathcalls.h:
 
 /usr/include/gimp-2.0/libgimpmath/gimpmatrix.h:
 

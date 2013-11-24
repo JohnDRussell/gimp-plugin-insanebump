@@ -51,14 +51,10 @@ void removeAllLayersExceptMain(void);
 
 /*  Global Variables  */
 gchar _active = 'x';
-// GtkWidget *btn_d = NULL; // Diffuse Frame not needed
 PreviewDraws pDrawables;
 
 /*  Local variables  */
-// static GtkWidget *btn_ao = NULL; // Occlusion Frame not needed
-// static GtkWidget *btn_s = NULL; // Specular Frame not needed
 static GtkWidget *btn_n = NULL;
-// static GtkWidget *btn_h = NULL; // Displacement Frame not needed
 static GtkWidget *btn_ln = NULL;
 static GtkWidget *btn_mn = NULL;
 static GtkWidget *btn_hn = NULL;
@@ -71,12 +67,10 @@ static GtkWidget *gwNormalLabel = NULL;
 static void draw_preview_area_update(GtkWidget *preview, GimpDrawable *drawable) {
     if(is_3D_preview_active())
     {
-        // g_printf("draw_preview_area_update is_3D_preview_active()\n");
         /** Adding all references to preview for second release. */
         if ((local_vals.image_ID != 0) && (drawable != NULL))
         {
             update_preview = 0;
-            // g_printf("draw_preview_area_update\n");
             if (drawable->bpp == 3) {
                 GimpPixelRgn amap_rgn;
                 gint rowbytes = PREVIEW_SIZE * 3;
@@ -138,7 +132,6 @@ static void preview_diffuse_only(gint32 image_ID) {
     if (local_vals.Noise)
     {
         /** Already have active layer in drawable_ID. */
-        // drawable_ID = gimp_image_get_active_layer(image_ID);
         noiselayer_ID = gimp_layer_copy (drawable_ID);
 
         gimp_image_add_layer(image_ID, noiselayer_ID, -1);
@@ -172,22 +165,7 @@ static void preview_diffuse_only(gint32 image_ID) {
          * If Noise is on, then noiselayer_ID was merged down into drawable_ID.
          * You cannot remove drawable_ID in this case, as it is the only 
          * layer left!
-         */
-        // if (!local_vals.Noise) {
-        //     removeGivenLayerFromImage(image_ID, drawable_ID);
-        // }
-        
-        //gint *pnLayers = NULL;
-        //gint numLayers = 0 ;
-        //pnLayers = gimp_image_get_layers(image_ID, &numLayers);
-        //GString *gsTemp = g_string_new("Number of Layers ");
-        //g_string_printf(gsTemp, "Number of Layers = %d pnLayers[0] = %d", numLayers, pnLayers[0]);
-        //gimp_message(gsTemp->str);
-        //g_string_free(gsTemp, TRUE);
-        //// Said: "Number of Layers = 3 pnLayers[0] = 11"
-        //// Closed InsaneBump and observed Background Copy #1 and Background layer names.
-        
-        /**
+         * 
          * However, if Noise is Yes and RemoveLighting is Yes,
          * Then there is an extra layer floating around!
          * Delete noiselayer_ID?  I thought it was merged!
@@ -209,7 +187,6 @@ static void preview_diffuse_only(gint32 image_ID) {
     /** Here I should un hide previously hidden layer, make visible. */
     
     pDrawables.drawable_d = gimp_drawable_get(drawableDiffuse_ID);
-    // return NULL;
 }
 
 static void preview_alt_normal(gint32 image_ID) {
@@ -231,9 +208,10 @@ static void preview_alt_normal(gint32 image_ID) {
     gimp_image_set_active_layer(image_ID, diffuse_ID);
     /** Here I should hide previous active layer, make not visible. */
     
-    /** Since copied, don't need this here. */
-    // gint32 diffuse_ID = gimp_image_get_active_layer(image_ID);
-    /** blur seems to not create an extra layer. */
+    /**
+     * Since copied, don't need this here.
+     * blur seems to not create an extra layer.
+     */
     blur(image_ID, diffuse_ID, wsize, hsize, local_vals.LargeDetails, 0);
 
     normalmap_ID = gimp_image_get_active_layer(image_ID);
@@ -321,25 +299,26 @@ static void preview_alt_normal(gint32 image_ID) {
 
     gimp_drawable_set_visible(diffuse_ID, 0);
     
-    /** Don't do the next line: */
-    // gimp_image_merge_visible_layers(image_ID, 0);
-    /** Do this instead for preview: */
+    /**
+     * Don't do the next line:
+     * 
+     * gimp_image_merge_visible_layers(image_ID, 0);
+     * 
+     * Do this instead for preview:
+     */
     mergedLayer_ID = gimp_layer_new_from_visible(image_ID, image_ID, "temp");
     /** Add copied layer to image. */
     gimp_image_add_layer(image_ID, mergedLayer_ID, -1);
-    // removeGivenLayerFromImage(image_ID, newlayer_ID);
-    /** Here I should un hide previously hidden layer, make visible. */
-
-    // drawable_ID = gimp_image_get_active_layer(image_ID);
 }
 
 static void preview_normal_only(gint32 image_ID) {
     gint32 drawableNormal_ID = -1;
-    /** Do not do this for preview. */
-    // gint32 diffuse_ID = gimp_image_get_active_layer(image_ID);
-    // gimp_drawable_set_visible(diffuse_ID, 0);
-    // gimp_image_merge_visible_layers(image_ID, 0);
     /**
+     * Do not do this for preview.
+     * gint32 diffuse_ID = gimp_image_get_active_layer(image_ID);
+     * gimp_drawable_set_visible(diffuse_ID, 0);
+     * gimp_image_merge_visible_layers(image_ID, 0);
+     * 
      * The theory here is to leave the original layer untouched, 
      * copy the active original layer, make the copy active, 
      * then modify the active layer.  Show this layer to the 
@@ -347,28 +326,17 @@ static void preview_normal_only(gint32 image_ID) {
      * the original drawing untouched for previews.
      */
 
-    // gint32 drawable_temp_ID = -1;
-    
     preview_diffuse_only(image_ID);
-    // if (preview_diffuse_only(image_ID) != NULL) return NULL;
     preview_alt_normal(image_ID);
     
-    /** because we just ran preview_alt_normal, don't need to copy, just grab. */
-//    /** Get active layer. */
-//    drawable_temp_ID = gimp_image_get_active_layer(image_ID);
-//    /** Copy active layer. */
-//    drawableNormalPrev_ID = gimp_layer_copy (drawable_temp_ID);
-//    /** Add layer to image. */
-//    gimp_image_add_layer(image_ID, drawableNormalPrev_ID, -1);
-//    /** Set the copied layer to be the active layer. */
-//    gimp_image_set_active_layer(image_ID, drawableNormalPrev_ID);
-//    /** Here I should hide previous active layer, make not visible. */
-
     /** Just grab. */
     drawableNormal_ID = gimp_image_get_active_layer(image_ID);
 
-    /** We just copied the active layer and made it active, don't need to do it again. */
-    // drawableNormalPrev_ID = gimp_image_get_active_layer(image_ID);
+    /**
+     * We just copied the active layer and made it active, don't need to do it again.
+     * 
+     * drawableNormalPrev_ID = gimp_image_get_active_layer(image_ID);
+     */
 
     /**
      * Filter "Normalmap" applied
@@ -392,16 +360,9 @@ static void preview_normal_only(gint32 image_ID) {
     nmapvals.alphamap_id = drawableNormal_ID;
     normalmap(drawableNormal_ID, 0);
 
-    // gimp_file_save(GIMP_RUN_NONINTERACTIVE, image_ID, drawable_ID, file_name_temp->str, file_name_temp->str);
-
-    /** Not needed because we are calling preview_alt_normal instead. */
-    // removeGivenLayerFromImage(image_ID, drawable_temp_ID);
-    /** Here I should un hide previously hidden layer, make visible. */
-    
     if (gcNeedNormal == 'n') {
         pDrawables.drawable_n = gimp_drawable_get(drawableNormal_ID);
     }
-    // return NULL;
 }
 
 static void preview_ambient_occlusion_only(gint32 image_ID) {
@@ -431,24 +392,14 @@ static void preview_ambient_occlusion_only(gint32 image_ID) {
     gimp_desaturate(drawableAO_ID);
     gimp_levels_stretch(drawableAO_ID);
     
-    // removeGivenLayerFromImage(image_ID, drawableDiffusePrev_ID);
-    // removeGivenLayerFromImage(image_ID, drawableNormalPrev_ID);
-    
     pDrawables.drawable_ao = gimp_drawable_get(drawableAO_ID);
-    // return NULL;
 }
 
 static void preview_specular_only(gint32 image_ID) {
     gint32 drawableSpecular_ID = -1;
     gint32 nResult = 0;
-    // gint32 temp_ID = -1;
 
-    // preview_diffuse_only(image_ID);
-    // preview_normal_only(image_ID);
     preview_ambient_occlusion_only(image_ID);
-    // if (preview_ambient_occlusion_only(image_ID) != NULL) return NULL;
-    
-    // temp_ID = gimp_image_get_active_layer(image_ID);
 
     if(local_vals.EdgeSpecular)
     {
@@ -457,7 +408,6 @@ static void preview_specular_only(gint32 image_ID) {
             gimp_message("Specular Edge Worker returned -1!");
             nResult = 0;
         } else nResult = 1;
-        // nResult = specularEdge(image_ID, NULL, local_vals.defSpecular);
     }
     else
     {
@@ -466,19 +416,13 @@ static void preview_specular_only(gint32 image_ID) {
             gimp_message("Specular Smooth Worker returned -1!");
             nResult = 0;
         } else nResult = 1;
-        // nResult = specularSmooth(image_ID, NULL, local_vals.defSpecular);
     }
     
-    // removeGivenLayerFromImage(image_ID, temp_ID);
-    // removeGivenLayerFromImage(image_ID, drawableDiffusePrev_ID);
-    // removeGivenLayerFromImage(image_ID, drawableNormalPrev_ID);
-    // removeGivenLayerFromImage(image_ID, drawableAOPrev_ID);
     if (nResult == 1) {
         pDrawables.drawable_s = gimp_drawable_get(drawableSpecular_ID);
     } else {
         pDrawables.drawable_s = NULL;
     }
-    // return NULL;
 }
 
 /*  Public functions  */
@@ -509,22 +453,10 @@ void init_drawables(void)
 
 void preview_redraw(void)
 {
-    // g_printf("preview_redraw _active =  %d\n", _active);
     if (!dialog_is_init) return;
-    // g_printf("!dialog_is_init preview_redraw _active =  %d\n", _active);
     if (is_3D_preview_active()) return;
-    // g_printf("!is_3D_preview_active() preview_redraw _active =  %d\n", _active);
     if (local_vals.prev == 1)
     {
-        // g_printf("prev == 1 preview_redraw _active =  %d\n", _active);
-        // GimpDrawable *drawable = NULL;
-        // gint32 AOButton = FALSE;
-        // gint32 DButton = FALSE;
-        // gint32 SButton = FALSE;
-        // gint32 NButton = FALSE;
-        
-        // g_printf("preview_area start\n");
-       
         if (pDrawables.drawable_d != NULL) {
             gimp_drawable_detach(pDrawables.drawable_d);
             pDrawables.drawable_d = NULL;
@@ -546,32 +478,7 @@ void preview_redraw(void)
             pDrawables.drawable_p = NULL;
         }
         
-        // if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(btn_ao)) == TRUE) {
-            // modifies original so bad, original is not retrievable. 11:39pm
-            // drawable = preview_ambient_occlusion_only(local_vals.image_ID, TRUE);
-            // draw_preview_area_update(preview_ao, drawable);
-        //     AOButton = TRUE;
-        // } else if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(btn_d)) == TRUE) {
-            // works 11:39pm
-            // This one had sub functions that when activated did not work.
-            // That was fixed at 12:39pm
-            // preview_diffuse_only(local_vals.image_ID);
-            // draw_preview_area_update(preview_d, drawable);
-        //     DButton = TRUE;
-        // } else if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(btn_s)) == TRUE) {
-            // works 11:39pm
-            // drawable = preview_specular_only(local_vals.image_ID);
         preview_specular_only(local_vals.image_ID);
-            // draw_preview_area_update(preview_s, drawable);
-        //     SButton = TRUE;
-        // } else if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(btn_n)) == TRUE) {
-            // modifies original so bad, original is not retrievable. 11:39pm
-            // 11:48pm works
-            // fixed by creating a copy of the original layer, modify that only.
-            // drawable = preview_normal_only(local_vals.image_ID, TRUE);
-            // draw_preview_area_update(preview_n, drawable);
-        //     NButton = TRUE;
-        // }
 
         if (pDrawables.drawable_d != NULL) {
             _active = 'd' ;
@@ -607,23 +514,8 @@ void preview_redraw(void)
         } else {
             gimp_preview_area_fill(GIMP_PREVIEW_AREA(pDrawables.preview_n), 0, 0, PREVIEW_SIZE, PREVIEW_SIZE, 0xF2, 0xF1, 0xF0);
         }
-        //_active = 0 ;
-        //draw_preview_area_update(preview_s, pDrawables.drawable_s);
-        //_active = 0 ;
-        //draw_preview_area_update(preview_n, pDrawables.drawable_n);
-        removeAllLayersExceptMain();
-        
-        // g_printf("preview_area end\n");
 
-//        if (AOButton) {
-//            removeAllLayersExceptMain();
-//        } else if (DButton) {
-//            removeAllLayersExceptMain();
-//        } else if (SButton) {
-//            removeAllLayersExceptMain();
-//        } else if (NButton) {
-//            removeAllLayersExceptMain();
-//        }
+        removeAllLayersExceptMain();
     }
 }
 
@@ -653,69 +545,6 @@ void preview_clicked(GtkWidget *widget, gpointer data)
     }
 }
 
-///** Adding the preview area for the second release. */
-//void preview_clicked_occlusion(GtkWidget *widget, gpointer data)
-//{
-//    if (!dialog_is_init) return;
-//    if (local_vals.prev == 0) return;
-//    int nChecked = 0 ;
-//    if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)) == TRUE) nChecked = 1;
-//    
-//    if ((local_vals.prev == 1) && (nChecked == 1))
-//    {
-//        GimpDrawable *ao_drawable = preview_ambient_occlusion_only(local_vals.image_ID, TRUE);
-//        _active = 0 ;
-//        draw_preview_one_area_update(ao_drawable);
-//        removeAllLayersExceptMain();
-//    }
-//    else if ((local_vals.prev == 1) && (nChecked == 0))
-//    {
-//        return;
-//    }
-//}
-
-///** Adding the preview area for the second release. */
-//void preview_clicked_diffuse(GtkWidget *widget, gpointer data)
-//{
-//    if (!dialog_is_init) return;
-//    if (local_vals.prev == 0) return;
-//    int nChecked = 0 ;
-//    if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)) == TRUE) nChecked = 1;
-//    
-//    if ((local_vals.prev == 1) && (nChecked == 1))
-//    {
-//        GimpDrawable *d_drawable = preview_diffuse_only(local_vals.image_ID, TRUE);
-//        _active = 0 ;
-//        draw_preview_one_area_update(d_drawable);
-//        removeAllLayersExceptMain();
-//    }
-//    else if ((local_vals.prev == 1) && (nChecked == 0))
-//    {
-//        return;
-//    }
-//}
-
-///** Adding the preview area for the second release. */
-//void preview_clicked_specular(GtkWidget *widget, gpointer data)
-//{
-//    if (!dialog_is_init) return;
-//    if (local_vals.prev == 0) return;
-//    int nChecked = 0 ;
-//    if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)) == TRUE) nChecked = 1;
-//    
-//    if ((local_vals.prev == 1) && (nChecked == 1))
-//    {
-//        GimpDrawable *s_drawable = preview_specular_only(local_vals.image_ID);
-//        _active = 0 ;
-//        draw_preview_one_area_update(s_drawable);
-//        removeAllLayersExceptMain();
-//    }
-//    else if ((local_vals.prev == 1) && (nChecked == 0))
-//    {
-//        return;
-//    }
-//}
-
 /** Adding the preview area for the second release. */
 void preview_clicked_normal(GtkWidget *widget, gpointer data)
 {
@@ -728,36 +557,12 @@ void preview_clicked_normal(GtkWidget *widget, gpointer data)
     {
         gcNeedNormal = 'n';
         preview_redraw();
-//        preview_normal_only(local_vals.image_ID);
-//        _active = 0 ;
-//        draw_preview_area_update(pDrawables.preview_n, pDrawables.drawable_n);
-//        removeAllLayersExceptMain();
     }
     else if ((local_vals.prev == 1) && (nChecked == 0))
     {
         return;
     }
 }
-
-//void preview_clicked_displacement(GtkWidget *widget, gpointer data)
-//{
-//    if (!dialog_is_init) return;
-//    if (local_vals.prev == 0) return;
-//    int nChecked = 0 ;
-//    if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)) == TRUE) nChecked = 1;
-//    
-//    if ((local_vals.prev == 1) && (nChecked == 1))
-//    {
-//        GimpDrawable *n_drawable = preview_normal_only(local_vals.image_ID, TRUE);
-//        _active = 0 ;
-//        draw_preview_one_area_update(n_drawable);
-//        removeAllLayersExceptMain();
-//    }
-//    else if ((local_vals.prev == 1) && (nChecked == 0))
-//    {
-//        return;
-//    }
-//}
 
 void preview_clicked_lownormal(GtkWidget *widget, gpointer data)
 {
@@ -770,10 +575,6 @@ void preview_clicked_lownormal(GtkWidget *widget, gpointer data)
     {
         gcNeedNormal = 'l';
         preview_redraw();
-//        preview_normal_only(local_vals.image_ID);
-//        _active = 0 ;
-//        draw_preview_area_update(pDrawables.preview_n, pDrawables.drawable_n);
-//        removeAllLayersExceptMain();
     }
     else if ((local_vals.prev == 1) && (nChecked == 0))
     {
@@ -792,10 +593,6 @@ void preview_clicked_mediumnormal(GtkWidget *widget, gpointer data)
     {
         gcNeedNormal = 'm';
         preview_redraw();
-//        preview_normal_only(local_vals.image_ID);
-//        _active = 0 ;
-//        draw_preview_area_update(pDrawables.preview_n, pDrawables.drawable_n);
-//        removeAllLayersExceptMain();
     }
     else if ((local_vals.prev == 1) && (nChecked == 0))
     {
@@ -814,13 +611,6 @@ void preview_clicked_highnormal(GtkWidget *widget, gpointer data)
     {
         gcNeedNormal = 'h';
         preview_redraw();
-//        preview_normal_only(local_vals.image_ID);
-//        _active = 0 ;
-//        draw_preview_area_update(pDrawables.preview_n, pDrawables.drawable_n);
-//        // GimpDrawable *n_drawable = preview_normal_only(local_vals.image_ID);
-//        // _active = 0 ;
-//        // draw_preview_area_update(pDrawables.preview_n, n_drawable);
-//        removeAllLayersExceptMain();
     }
     else if ((local_vals.prev == 1) && (nChecked == 0))
     {
@@ -839,10 +629,6 @@ void preview_clicked_supernormal(GtkWidget *widget, gpointer data)
     {
         gcNeedNormal = 's';
         preview_redraw();
-//        preview_normal_only(local_vals.image_ID);
-//        _active = 0 ;
-//        draw_preview_area_update(pDrawables.preview_n, pDrawables.drawable_n);
-//        removeAllLayersExceptMain();
     }
     else if ((local_vals.prev == 1) && (nChecked == 0))
     {
@@ -875,14 +661,11 @@ void removeAllLayersExceptMain(void) {
 int is_3D_preview_active(void)
 {
     if (_active == 'w') {
-        // g_printf("is_3D_preview_active == w\n");
         return FALSE;
     }
     else if (_active != 'x') {
-        // g_printf("is_3D_preview_active != x\n");
         return TRUE;
     }
-    // g_printf("is_3D_preview_active return FALSE\n");
     return FALSE;
 }
 
@@ -950,8 +733,6 @@ void CreateRightPreviewToggleButton(GtkWidget *hbox)
     }
     if (btn != NULL)
     {
-        // g_object_set_data(G_OBJECT(btn), "drawable", drawable);
-    
         gtk_signal_connect(GTK_OBJECT(btn), "clicked",
                            GTK_SIGNAL_FUNC(preview_clicked), 0);
 
@@ -963,58 +744,6 @@ void CreateRightPreviewToggleButton(GtkWidget *hbox)
         }
     }
     
-//    btn_d = gtk_radio_button_new_with_label_from_widget(NULL, "Diffuse");
-//    if (btn_d != NULL)
-//    {
-//        // g_object_set_data(G_OBJECT(btn_d), "drawable", drawable);
-//    
-//        gtk_signal_connect(GTK_OBJECT(btn_d), "clicked",
-//                           GTK_SIGNAL_FUNC(preview_clicked_diffuse), 0);
-//
-//        gtk_box_pack_start(GTK_BOX(vbox), btn_d, 0, 0, 0);
-//        gtk_widget_show(btn_d);
-//        // if ((local_vals.prev == 1) && (_diffuse_button == 1))
-//        // {
-//        
-//        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(btn_d), TRUE);
-//        
-//        // }
-//    }
-//    
-//    if (btn_d == NULL) return;
-//
-//    btn_ao = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(btn_d), "Occlusion");
-//    if (btn_ao != NULL)
-//    {
-//        // g_object_set_data(G_OBJECT(btn_ao), "drawable", drawable);
-//    
-//        gtk_signal_connect(GTK_OBJECT(btn_ao), "clicked",
-//                           GTK_SIGNAL_FUNC(preview_clicked_occlusion), 0);
-//
-//        gtk_box_pack_start(GTK_BOX(vbox), btn_ao, 0, 0, 0);
-//        gtk_widget_show(btn_ao);
-//        // if ((local_vals.prev == 1) && (_occlusion_button == 1))
-//        // {
-//        //    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(btn_ao), TRUE);
-//        // }
-//    }
-//
-//    btn_s = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(btn_d), "Specular");
-//    if (btn_s != NULL)
-//    {
-//        // g_object_set_data(G_OBJECT(btn_s), "drawable", drawable);
-//    
-//        gtk_signal_connect(GTK_OBJECT(btn_s), "clicked",
-//                           GTK_SIGNAL_FUNC(preview_clicked_specular), 0);
-//
-//        gtk_box_pack_start(GTK_BOX(vbox), btn_s, 0, 0, 0);
-//        gtk_widget_show(btn_s);
-//        // if ((local_vals.prev == 1) && (_specular_button == 1))
-//        // {
-//        //    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(btn_s), TRUE);
-//        // }
-//    }
-
     btn_n = gtk_radio_button_new_with_label_from_widget(NULL, "Normal");
     if (btn_n != NULL)
     {
@@ -1030,16 +759,6 @@ void CreateRightPreviewToggleButton(GtkWidget *hbox)
         //    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(btn_n), TRUE);
         // }
     }
-
-//    btn_h = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(btn_d), "Displacement");
-//    if (btn_h != NULL)
-//    {
-//        gtk_signal_connect(GTK_OBJECT(btn_h), "clicked",
-//                           GTK_SIGNAL_FUNC(preview_clicked_displacement), 0);
-//
-//        gtk_box_pack_start(GTK_BOX(vbox), btn_h, 0, 0, 0);
-//        gtk_widget_show(btn_h);
-//    }
 
     btn_ln = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(btn_n), "low normal");
     if (btn_ln != NULL)
@@ -1085,3 +804,4 @@ void CreateRightPreviewToggleButton(GtkWidget *hbox)
     gtk_box_pack_start(GTK_BOX(vbox), gwNormalLabel, 0, 0, 0);
     gtk_widget_show(gwNormalLabel);
 }
+

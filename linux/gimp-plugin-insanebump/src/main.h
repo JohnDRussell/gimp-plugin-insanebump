@@ -28,6 +28,7 @@
 #ifndef __MAIN_H__
 #define __MAIN_H__
 
+#define NAME_AND_VERSION "Insane Bump 1.0.4"
 
 typedef struct
 {

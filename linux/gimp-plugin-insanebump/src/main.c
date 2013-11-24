@@ -181,6 +181,8 @@ run (const gchar      *name,
     GimpRunMode        run_mode;
     GimpPDBStatusType  status = GIMP_PDB_SUCCESS;
     gint nDlgResponse = -5;
+    
+    init_drawables();
 
     *nreturn_vals = 1;
     *return_vals  = values;

@@ -539,7 +539,7 @@ void removeShadingPreview(gint32 image_ID, gint32 noise_val)
      * So, here goes:
      */
     // layerPos = gimp_image_get_layer_position(image_ID, newlayer_ID);
-    mergedLayer_ID = gimp_layer_new_from_visible(image_ID, image_ID, "temp");
+    mergedLayer_ID = gimp_layer_new_from_visible(image_ID, image_ID, "temp_shadow");
     /** Add copied layer to image. */
     gimp_image_add_layer(image_ID, mergedLayer_ID, -1);
     

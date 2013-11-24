@@ -34,26 +34,39 @@
 #define PREVIEW_RGB_SIZE 67500
 #define PREVIEW_RGBA_SIZE 90000
 
+/* structures */
+
+typedef struct
+{
+    GimpDrawable *drawable_d;
+    GtkWidget *preview_d;
+    GimpDrawable *drawable_ao;
+    GtkWidget *preview_ao;
+    GimpDrawable *drawable_s;
+    GtkWidget *preview_s;
+    GimpDrawable *drawable_p;
+    GtkWidget *preview_p;
+    GimpDrawable *drawable_n;
+    GtkWidget *preview_n;
+} PreviewDraws;
+
 /*  Global variables  */
 
-extern int _active;
-extern int _occlusion_button;
-extern int _diffuse_button;
-extern int _specular_button;
-extern int _normal_button;
+extern gchar _active;
 extern PlugInVals local_vals;
 extern int update_preview;
-extern GtkWidget *preview;
 extern gint dialog_is_init;
-extern GtkWidget *btn_d;
+extern PreviewDraws pDrawables;
 
 /*  Public functions  */
 
+void init_drawables(void);
 int is_3D_preview_active(void);
 gint InsaneBumpDialog(GimpDrawable *drawable,
                       const gchar *szBinary,
                       PlugInVals *vals);
-void CreatePreviewToggleButton(GtkWidget *hbox, GimpDrawable *drawable);
+void CreateLeftPreviewFrames(GtkWidget *hbox);
+void CreateRightPreviewToggleButton(GtkWidget *hbox);
 void preview_redraw(void);
 void preview_clicked(GtkWidget *widget, gpointer data);
 void preview_clicked_occlusion(GtkWidget *widget, gpointer data);

@@ -13,7 +13,7 @@
 # even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 # PARTICULAR PURPOSE.
 
-MAKE=make
+
 
 
 pkgdatadir = $(datadir)/insanebump
@@ -35,7 +35,7 @@ POST_UNINSTALL = :
 subdir = help/en
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/configure.in
+am__aclocal_m4_deps = $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
@@ -74,20 +74,20 @@ am__uninstall_files_from_dir = { \
 am__installdirs = "$(DESTDIR)$(helpdatadir)"
 DATA = $(helpdata_DATA)
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
-ACLOCAL = ${SHELL} /home/derby/workspace/Netbeans/gimp-plugin-insanebump-1.0.2-linux-i586/missing --run aclocal-1.11 
+ACLOCAL = ${SHELL} /home/derby/workspace/NetbeansProjects/InsaneBump/linux/gimp-plugin-insanebump/missing --run aclocal-1.11 
 ALL_LINGUAS = az de fr sk sv zh_TW
 AMTAR = $${TAR-tar}
 AM_DEFAULT_VERBOSITY = 1
-AUTOCONF = ${SHELL} /home/derby/workspace/Netbeans/gimp-plugin-insanebump-1.0.2-linux-i586/missing --run autoconf
-AUTOHEADER = ${SHELL} /home/derby/workspace/Netbeans/gimp-plugin-insanebump-1.0.2-linux-i586/missing --run autoheader
-AUTOMAKE = ${SHELL} /home/derby/workspace/Netbeans/gimp-plugin-insanebump-1.0.2-linux-i586/missing --run automake-1.11
+AUTOCONF = ${SHELL} /home/derby/workspace/NetbeansProjects/InsaneBump/linux/gimp-plugin-insanebump/missing --run autoconf
+AUTOHEADER = ${SHELL} /home/derby/workspace/NetbeansProjects/InsaneBump/linux/gimp-plugin-insanebump/missing --run autoheader
+AUTOMAKE = ${SHELL} /home/derby/workspace/NetbeansProjects/InsaneBump/linux/gimp-plugin-insanebump/missing --run automake-1.11
 AWK = mawk
 CATALOGS =  az.gmo de.gmo fr.gmo sk.gmo sv.gmo zh_TW.gmo
 CATOBJEXT = .gmo
-CC = gcc
+CC = /usr/bin/gcc
 CCDEPMODE = depmode=gcc3
-CFLAGS = -g -O2 -Wall
-CPP = gcc -E
+CFLAGS = -g3 -gdwarf-2 -Wall
+CPP = /usr/bin/gcc -E
 CPPFLAGS = 
 CYGPATH_W = echo
 DATADIR = ${datadir}/gimp-plugin-insanebump
@@ -127,7 +127,7 @@ LIBS =
 LOCALEDIR = ${datadir}/locale
 LTLIBOBJS = 
 MAINT = #
-MAKEINFO = ${SHELL} /home/derby/workspace/Netbeans/gimp-plugin-insanebump-1.0.2-linux-i586/missing --run makeinfo
+MAKEINFO = ${SHELL} /home/derby/workspace/NetbeansProjects/InsaneBump/linux/gimp-plugin-insanebump/missing --run makeinfo
 MKDIR_P = /bin/mkdir -p
 MKINSTALLDIRS = ./mkinstalldirs
 MSGFMT = /usr/bin/msgfmt
@@ -149,17 +149,17 @@ POFILES =  az.po de.po fr.po sk.po sv.po zh_TW.po
 POSUB = po
 PO_IN_DATADIR_FALSE = 
 PO_IN_DATADIR_TRUE = 
-SET_MAKE = MAKE=make
+SET_MAKE = 
 SHELL = /bin/bash
 STRIP = 
 USE_NLS = yes
 VERSION = 1.0.1
 XGETTEXT = /usr/bin/xgettext
-abs_builddir = /home/derby/workspace/Netbeans/gimp-plugin-insanebump-1.0.2-linux-i586/help/en
-abs_srcdir = /home/derby/workspace/Netbeans/gimp-plugin-insanebump-1.0.2-linux-i586/help/en
-abs_top_builddir = /home/derby/workspace/Netbeans/gimp-plugin-insanebump-1.0.2-linux-i586
-abs_top_srcdir = /home/derby/workspace/Netbeans/gimp-plugin-insanebump-1.0.2-linux-i586
-ac_ct_CC = gcc
+abs_builddir = /home/derby/workspace/NetbeansProjects/InsaneBump/linux/gimp-plugin-insanebump/help/en
+abs_srcdir = /home/derby/workspace/NetbeansProjects/InsaneBump/linux/gimp-plugin-insanebump/help/en
+abs_top_builddir = /home/derby/workspace/NetbeansProjects/InsaneBump/linux/gimp-plugin-insanebump
+abs_top_srcdir = /home/derby/workspace/NetbeansProjects/InsaneBump/linux/gimp-plugin-insanebump
+ac_ct_CC = /usr/bin/gcc
 am__include = include
 am__leading_dot = .
 am__quote = 
@@ -177,7 +177,7 @@ host_alias =
 htmldir = ${docdir}
 includedir = ${prefix}/include
 infodir = ${datarootdir}/info
-install_sh = ${SHELL} /home/derby/workspace/Netbeans/gimp-plugin-insanebump-1.0.2-linux-i586/install-sh
+install_sh = ${SHELL} /home/derby/workspace/NetbeansProjects/InsaneBump/linux/gimp-plugin-insanebump/install-sh
 intltool__v_merge_options_ = $(intltool__v_merge_options_$(AM_DEFAULT_VERBOSITY))
 intltool__v_merge_options_0 = -q
 libdir = ${exec_prefix}/lib

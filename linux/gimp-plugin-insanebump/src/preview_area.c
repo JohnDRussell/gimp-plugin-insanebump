@@ -50,8 +50,9 @@ void removeAllLayersExceptMain(void);
 
 
 /*  Global Variables  */
-int _active = 0;
+gchar _active = 'x';
 // GtkWidget *btn_d = NULL; // Diffuse Frame not needed
+PreviewDraws pDrawables;
 
 /*  Local variables  */
 // static GtkWidget *btn_ao = NULL; // Occlusion Frame not needed
@@ -62,21 +63,20 @@ static GtkWidget *btn_ln = NULL;
 static GtkWidget *btn_mn = NULL;
 static GtkWidget *btn_hn = NULL;
 static GtkWidget *btn_sn = NULL;
-static gint32 drawableAOPrev_ID = -1;
-static gint32 drawableDiffusePrev_ID = -1;
-static gint32 drawableSpecularPrev_ID = -1;
-static gint32 drawableNormalPrev_ID = -1;
 static gint32 drawableBeginActiveLayer = -1;
-
+static gchar gcNeedNormal = 'n';
+static GtkWidget *gwNormalLabel = NULL;
 
 /*  Private functions  */
 static void draw_preview_area_update(GtkWidget *preview, GimpDrawable *drawable) {
-    if(!is_3D_preview_active())
+    if(is_3D_preview_active())
     {
+        // g_printf("draw_preview_area_update is_3D_preview_active()\n");
         /** Adding all references to preview for second release. */
         if ((local_vals.image_ID != 0) && (drawable != NULL))
         {
             update_preview = 0;
+            // g_printf("draw_preview_area_update\n");
             if (drawable->bpp == 3) {
                 GimpPixelRgn amap_rgn;
                 gint rowbytes = PREVIEW_SIZE * 3;
@@ -93,7 +93,7 @@ static void draw_preview_area_update(GtkWidget *preview, GimpDrawable *drawable)
                                        GIMP_RGB_IMAGE, dst, rowbytes);
                 gtk_widget_queue_draw (preview);
                 g_free (tmp);
-                _active = 1;
+                _active = 'w';
             } else if (drawable->bpp == 4) {
                 GimpPixelRgn amap_rgn;
                 gint rowbytes = PREVIEW_SIZE * 4;
@@ -111,20 +111,22 @@ static void draw_preview_area_update(GtkWidget *preview, GimpDrawable *drawable)
                 
                 gtk_widget_queue_draw (preview);
                 g_free (tmp);
-                _active = 1;
+                _active = 'w';
             }
         }
     }
 }
 
-static GimpDrawable *preview_diffuse_only(gint32 image_ID, gint32 draw) {
+static void preview_diffuse_only(gint32 image_ID) {
     gint32 noiselayer_ID = -1;
     gint32 drawable_ID = -1;
+    gint32 drawableDiffuse_ID = -1;
     drawableBeginActiveLayer = gimp_image_get_active_layer(image_ID);
     drawable_ID = gimp_layer_copy (drawableBeginActiveLayer);
     gimp_image_add_layer(image_ID, drawable_ID, -1);
     gimp_image_set_active_layer(image_ID, drawable_ID);
     /** Here I should hide previous active layer, make not visible. */
+    gimp_drawable_set_visible(drawableBeginActiveLayer, FALSE);
 
     /**
      * For preview do nothing here. 
@@ -148,10 +150,14 @@ static GimpDrawable *preview_diffuse_only(gint32 image_ID, gint32 draw) {
          * 
          * Add the "f" here to signify float in c language.
          */
-        if (plug_in_rgb_noise_connector(image_ID, noiselayer_ID, 1, 1, 0.20f, 0.20f, 0.20f, 0.0f) != 1) return 0;
+        if (plug_in_rgb_noise_connector(image_ID, noiselayer_ID, 1, 1, 0.20f, 0.20f, 0.20f, 0.0f) != 1) return;
 
         gimp_layer_set_mode(noiselayer_ID, GIMP_VALUE_MODE);
         gimp_image_merge_down(image_ID, noiselayer_ID, 0);
+        
+        gtk_label_set_text(GTK_LABEL(gwNormalLabel), "Noise affects every redraw!");
+    } else {
+        gtk_label_set_text(GTK_LABEL(gwNormalLabel), "");
     }
          
     if(local_vals.RemoveLighting)
@@ -189,23 +195,21 @@ static GimpDrawable *preview_diffuse_only(gint32 image_ID, gint32 draw) {
          */
     }
 		
-    drawableDiffusePrev_ID = gimp_image_get_active_layer(image_ID);
-    gimp_levels_stretch(drawableDiffusePrev_ID);
+    drawableDiffuse_ID = gimp_image_get_active_layer(image_ID);
+    gimp_levels_stretch(drawableDiffuse_ID);
     if(local_vals.Tile)
     {
         /**
          * Filter "Tile Seamless" applied
          * Standard plug-in. Source code ships with GIMP.
          */
-        if (plug_in_make_seamless_connector(image_ID, drawableDiffusePrev_ID) != 1) return 0;
+        if (plug_in_make_seamless_connector(image_ID, drawableDiffuse_ID) != 1) return;
     }
     
     /** Here I should un hide previously hidden layer, make visible. */
     
-    if (draw == TRUE) {
-        return gimp_drawable_get(drawableDiffusePrev_ID);
-    }
-    return NULL;
+    pDrawables.drawable_d = gimp_drawable_get(drawableDiffuse_ID);
+    // return NULL;
 }
 
 static void preview_alt_normal(gint32 image_ID) {
@@ -250,11 +254,19 @@ static void preview_alt_normal(gint32 image_ID) {
          */
         if (plug_in_vinvert_connector(image_ID, normalmap_ID) != 1) return;
     }
+    
+    /** Here is _p Displacement drawable. */
+    pDrawables.drawable_p = gimp_drawable_get(normalmap_ID);
 
     /** Extra layer here. */
     /** LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL */
     doBaseMap(image_ID, diffuse_ID, local_vals.Depth, local_vals.LargeDetails);
     normalmap_ID = gimp_image_get_active_layer(image_ID);
+    
+    /** Here is _ln low normal. l l l l l l l l l l l l l l l l */
+    if (gcNeedNormal == 'l') {
+        pDrawables.drawable_n = gimp_drawable_get(normalmap_ID);
+    }
 
     /** Creates an extra layer. */
     /** LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL */
@@ -269,6 +281,11 @@ static void preview_alt_normal(gint32 image_ID) {
          */
         if (plug_in_blur_connector(image_ID, normalmap_ID) != 1) return;
     }
+    
+    /** Here is _sn super normal. s s s s s s s s s s s s s s s s */
+    if (gcNeedNormal == 's') {
+        pDrawables.drawable_n = gimp_drawable_get(normalmap_ID);
+    }
 
     /** Creates an extra layer. */
     /** LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL */
@@ -280,6 +297,11 @@ static void preview_alt_normal(gint32 image_ID) {
     * Standard plug-in. Source code ships with GIMP.
     */
     if (plug_in_sharpen_connector(image_ID, normalmap_ID, 20) != 1) return;
+    
+    /** Here is _hn high normal. h h h h h h h h h h h h h h h h */
+    if (gcNeedNormal == 'h') {
+        pDrawables.drawable_n = gimp_drawable_get(normalmap_ID);
+    }
 
     /** Creates an extra layer. */
     /** LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL */
@@ -291,6 +313,11 @@ static void preview_alt_normal(gint32 image_ID) {
      * Standard plug-in. Source code ships with GIMP.
      */
     if (plug_in_blur_connector(image_ID, normalmap_ID) != 1) return;
+    
+    /** Here is _mn medium normal m m m m m m m m m m m m m m m m */
+    if (gcNeedNormal == 'm') {
+        pDrawables.drawable_n = gimp_drawable_get(normalmap_ID);
+    }
 
     gimp_drawable_set_visible(diffuse_ID, 0);
     
@@ -306,7 +333,8 @@ static void preview_alt_normal(gint32 image_ID) {
     // drawable_ID = gimp_image_get_active_layer(image_ID);
 }
 
-static GimpDrawable *preview_normal_only(gint32 image_ID, gint32 draw) {
+static void preview_normal_only(gint32 image_ID) {
+    gint32 drawableNormal_ID = -1;
     /** Do not do this for preview. */
     // gint32 diffuse_ID = gimp_image_get_active_layer(image_ID);
     // gimp_drawable_set_visible(diffuse_ID, 0);
@@ -321,7 +349,8 @@ static GimpDrawable *preview_normal_only(gint32 image_ID, gint32 draw) {
 
     // gint32 drawable_temp_ID = -1;
     
-    if (preview_diffuse_only(image_ID, FALSE) != NULL) return NULL;
+    preview_diffuse_only(image_ID);
+    // if (preview_diffuse_only(image_ID) != NULL) return NULL;
     preview_alt_normal(image_ID);
     
     /** because we just ran preview_alt_normal, don't need to copy, just grab. */
@@ -336,7 +365,7 @@ static GimpDrawable *preview_normal_only(gint32 image_ID, gint32 draw) {
 //    /** Here I should hide previous active layer, make not visible. */
 
     /** Just grab. */
-    drawableNormalPrev_ID = gimp_image_get_active_layer(image_ID);
+    drawableNormal_ID = gimp_image_get_active_layer(image_ID);
 
     /** We just copied the active layer and made it active, don't need to do it again. */
     // drawableNormalPrev_ID = gimp_image_get_active_layer(image_ID);
@@ -360,8 +389,8 @@ static GimpDrawable *preview_normal_only(gint32 image_ID, gint32 draw) {
     nmapvals.yinvert = 0;
     nmapvals.swapRGB = 0;
     nmapvals.contrast = 0.0f;
-    nmapvals.alphamap_id = drawableNormalPrev_ID;
-    normalmap(drawableNormalPrev_ID, 0);
+    nmapvals.alphamap_id = drawableNormal_ID;
+    normalmap(drawableNormal_ID, 0);
 
     // gimp_file_save(GIMP_RUN_NONINTERACTIVE, image_ID, drawable_ID, file_name_temp->str, file_name_temp->str);
 
@@ -369,16 +398,26 @@ static GimpDrawable *preview_normal_only(gint32 image_ID, gint32 draw) {
     // removeGivenLayerFromImage(image_ID, drawable_temp_ID);
     /** Here I should un hide previously hidden layer, make visible. */
     
-    if (draw == TRUE) {
-        return gimp_drawable_get(drawableNormalPrev_ID);
+    if (gcNeedNormal == 'n') {
+        pDrawables.drawable_n = gimp_drawable_get(drawableNormal_ID);
     }
-    return NULL;
+    // return NULL;
 }
 
-static GimpDrawable *preview_ambient_occlusion_only(gint32 image_ID, gint32 draw) {
+static void preview_ambient_occlusion_only(gint32 image_ID) {
+    gint32 drawable_ID = -1;
+    gint32 drawableAO_ID = -1;
     // preview_diffuse_only(image_ID);
-    if (preview_normal_only(image_ID, FALSE) != NULL) return NULL;
-    drawableAOPrev_ID = gimp_image_get_active_layer(image_ID);
+    preview_normal_only(image_ID);
+    // if (preview_normal_only(image_ID) != NULL) return NULL;
+    drawable_ID = gimp_image_get_active_layer(image_ID);
+    /** Copy active layer. */
+    /** LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL */
+    drawableAO_ID = gimp_layer_copy (drawable_ID);
+    /** Add new layer to image. */
+    gimp_image_add_layer(image_ID, drawableAO_ID, -1);
+    /** Set new layer as active. */
+    gimp_image_set_active_layer(image_ID, drawableAO_ID);
 
     /**
      * Colors ->  Components -> "Channel Mixer" applied
@@ -387,34 +426,34 @@ static GimpDrawable *preview_ambient_occlusion_only(gint32 image_ID, gint32 draw
      * Add the "f" here to signify float in c language.
      * Removed 0.0 on first param and changed to 0 because boolean.
      */
-    if (plug_in_colors_channel_mixer_connector(image_ID, drawableAOPrev_ID, 0, -200.0f, 0.0f, 0.0f, 0.0f, -200.0f, 0.0f, 0.0f, 0.0f, 1.0f) != 1) return 0;
+    if (plug_in_colors_channel_mixer_connector(image_ID, drawableAO_ID, 0, -200.0f, 0.0f, 0.0f, 0.0f, -200.0f, 0.0f, 0.0f, 0.0f, 1.0f) != 1) return;
 
-    gimp_desaturate(drawableAOPrev_ID);
-    gimp_levels_stretch(drawableAOPrev_ID);
+    gimp_desaturate(drawableAO_ID);
+    gimp_levels_stretch(drawableAO_ID);
     
     // removeGivenLayerFromImage(image_ID, drawableDiffusePrev_ID);
     // removeGivenLayerFromImage(image_ID, drawableNormalPrev_ID);
     
-    if (draw == TRUE) {
-        return gimp_drawable_get(drawableAOPrev_ID);
-    }
-    return NULL;
+    pDrawables.drawable_ao = gimp_drawable_get(drawableAO_ID);
+    // return NULL;
 }
 
-static GimpDrawable *preview_specular_only(gint32 image_ID) {
+static void preview_specular_only(gint32 image_ID) {
+    gint32 drawableSpecular_ID = -1;
     gint32 nResult = 0;
     // gint32 temp_ID = -1;
 
     // preview_diffuse_only(image_ID);
     // preview_normal_only(image_ID);
-    if (preview_ambient_occlusion_only(image_ID, FALSE) != NULL) return NULL;
+    preview_ambient_occlusion_only(image_ID);
+    // if (preview_ambient_occlusion_only(image_ID) != NULL) return NULL;
     
     // temp_ID = gimp_image_get_active_layer(image_ID);
 
     if(local_vals.EdgeSpecular)
     {
-        drawableSpecularPrev_ID = specularEdgeWorker(image_ID, local_vals.defSpecular, FALSE);
-        if (drawableSpecularPrev_ID == -1) {
+        drawableSpecular_ID = specularEdgeWorker(image_ID, local_vals.defSpecular, FALSE);
+        if (drawableSpecular_ID == -1) {
             gimp_message("Specular Edge Worker returned -1!");
             nResult = 0;
         } else nResult = 1;
@@ -422,8 +461,8 @@ static GimpDrawable *preview_specular_only(gint32 image_ID) {
     }
     else
     {
-        drawableSpecularPrev_ID = specularSmoothWorker(image_ID, local_vals.defSpecular, FALSE);
-        if (drawableSpecularPrev_ID == -1) {
+        drawableSpecular_ID = specularSmoothWorker(image_ID, local_vals.defSpecular, FALSE);
+        if (drawableSpecular_ID == -1) {
             gimp_message("Specular Smooth Worker returned -1!");
             nResult = 0;
         } else nResult = 1;
@@ -435,25 +474,77 @@ static GimpDrawable *preview_specular_only(gint32 image_ID) {
     // removeGivenLayerFromImage(image_ID, drawableNormalPrev_ID);
     // removeGivenLayerFromImage(image_ID, drawableAOPrev_ID);
     if (nResult == 1) {
-        return gimp_drawable_get(drawableSpecularPrev_ID);
+        pDrawables.drawable_s = gimp_drawable_get(drawableSpecular_ID);
+    } else {
+        pDrawables.drawable_s = NULL;
     }
-    return NULL;
+    // return NULL;
 }
 
 /*  Public functions  */
 /** Adding the preview area for the second release. */
+void init_drawables(void)
+{
+    pDrawables.drawable_d = NULL;
+    pDrawables.drawable_ao = NULL;
+    pDrawables.drawable_s = NULL;
+    pDrawables.drawable_n = NULL;
+    pDrawables.drawable_p = NULL;
+    pDrawables.preview_d = NULL;
+    pDrawables.preview_ao = NULL;
+    pDrawables.preview_s = NULL;
+    pDrawables.preview_n = NULL;
+    pDrawables.preview_p = NULL;
+
+    btn_n = NULL;
+    btn_ln = NULL;
+    btn_mn = NULL;
+    btn_hn = NULL;
+    btn_sn = NULL;
+    drawableBeginActiveLayer = -1;
+    gcNeedNormal = 'n';
+    
+    _active = 'x' ;
+}
+
 void preview_redraw(void)
 {
+    // g_printf("preview_redraw _active =  %d\n", _active);
     if (!dialog_is_init) return;
+    // g_printf("!dialog_is_init preview_redraw _active =  %d\n", _active);
+    if (is_3D_preview_active()) return;
+    // g_printf("!is_3D_preview_active() preview_redraw _active =  %d\n", _active);
     if (local_vals.prev == 1)
     {
-        GimpDrawable *drawable = NULL;
+        // g_printf("prev == 1 preview_redraw _active =  %d\n", _active);
+        // GimpDrawable *drawable = NULL;
         // gint32 AOButton = FALSE;
         // gint32 DButton = FALSE;
         // gint32 SButton = FALSE;
         // gint32 NButton = FALSE;
         
-        _active = 0 ;
+        // g_printf("preview_area start\n");
+       
+        if (pDrawables.drawable_d != NULL) {
+            gimp_drawable_detach(pDrawables.drawable_d);
+            pDrawables.drawable_d = NULL;
+        }
+        if (pDrawables.drawable_ao != NULL) {
+            gimp_drawable_detach(pDrawables.drawable_ao);
+            pDrawables.drawable_ao = NULL;
+        }
+        if (pDrawables.drawable_s != NULL) {
+            gimp_drawable_detach(pDrawables.drawable_s);
+            pDrawables.drawable_s = NULL;
+        }
+        if (pDrawables.drawable_n != NULL) {
+            gimp_drawable_detach(pDrawables.drawable_n);
+            pDrawables.drawable_n = NULL;
+        }
+        if (pDrawables.drawable_p != NULL) {
+            gimp_drawable_detach(pDrawables.drawable_p);
+            pDrawables.drawable_p = NULL;
+        }
         
         // if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(btn_ao)) == TRUE) {
             // modifies original so bad, original is not retrievable. 11:39pm
@@ -464,12 +555,13 @@ void preview_redraw(void)
             // works 11:39pm
             // This one had sub functions that when activated did not work.
             // That was fixed at 12:39pm
-            drawable = preview_diffuse_only(local_vals.image_ID, TRUE);
+            // preview_diffuse_only(local_vals.image_ID);
             // draw_preview_area_update(preview_d, drawable);
         //     DButton = TRUE;
         // } else if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(btn_s)) == TRUE) {
             // works 11:39pm
             // drawable = preview_specular_only(local_vals.image_ID);
+        preview_specular_only(local_vals.image_ID);
             // draw_preview_area_update(preview_s, drawable);
         //     SButton = TRUE;
         // } else if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(btn_n)) == TRUE) {
@@ -481,12 +573,47 @@ void preview_redraw(void)
         //     NButton = TRUE;
         // }
 
-        // draw_preview_one_area_update(drawable);
-        draw_preview_area_update(preview_ao, drawable);
-        draw_preview_area_update(preview_d, drawable);
-        draw_preview_area_update(preview_s, drawable);
-        draw_preview_area_update(preview_n, drawable);
+        if (pDrawables.drawable_d != NULL) {
+            _active = 'd' ;
+            draw_preview_area_update(pDrawables.preview_d, pDrawables.drawable_d);
+        } else {
+            gimp_preview_area_fill(GIMP_PREVIEW_AREA(pDrawables.preview_d), 0, 0, PREVIEW_SIZE, PREVIEW_SIZE, 0xF2, 0xF1, 0xF0);
+            _active = 'd' ;
+        }
+        if (pDrawables.drawable_ao != NULL) {
+            _active = 'a' ;
+            draw_preview_area_update(pDrawables.preview_ao, pDrawables.drawable_ao);
+        } else {
+            gimp_preview_area_fill(GIMP_PREVIEW_AREA(pDrawables.preview_ao), 0, 0, PREVIEW_SIZE, PREVIEW_SIZE, 0xF2, 0xF1, 0xF0);
+            _active = 'a' ;
+        }
+        if (pDrawables.drawable_s != NULL) {
+            _active = 's' ;
+            draw_preview_area_update(pDrawables.preview_s, pDrawables.drawable_s);
+        } else {
+            gimp_preview_area_fill(GIMP_PREVIEW_AREA(pDrawables.preview_s), 0, 0, PREVIEW_SIZE, PREVIEW_SIZE, 0xF2, 0xF1, 0xF0);
+            _active = 's' ;
+        }
+        if (pDrawables.drawable_p != NULL) {
+            _active = 'p' ;
+            draw_preview_area_update(pDrawables.preview_p, pDrawables.drawable_p);
+        } else {
+            gimp_preview_area_fill(GIMP_PREVIEW_AREA(pDrawables.preview_p), 0, 0, PREVIEW_SIZE, PREVIEW_SIZE, 0xF2, 0xF1, 0xF0);
+            _active = 'p' ;
+        }
+        if (pDrawables.drawable_n != NULL) {
+            _active = 'n' ;
+            draw_preview_area_update(pDrawables.preview_n, pDrawables.drawable_n);
+        } else {
+            gimp_preview_area_fill(GIMP_PREVIEW_AREA(pDrawables.preview_n), 0, 0, PREVIEW_SIZE, PREVIEW_SIZE, 0xF2, 0xF1, 0xF0);
+        }
+        //_active = 0 ;
+        //draw_preview_area_update(preview_s, pDrawables.drawable_s);
+        //_active = 0 ;
+        //draw_preview_area_update(preview_n, pDrawables.drawable_n);
         removeAllLayersExceptMain();
+        
+        // g_printf("preview_area end\n");
 
 //        if (AOButton) {
 //            removeAllLayersExceptMain();
@@ -515,13 +642,13 @@ void preview_clicked(GtkWidget *widget, gpointer data)
         gtk_button_set_label(GTK_BUTTON(widget), "Preview Off");
 
         // html color: #f2f1f0
-        gimp_preview_area_fill(GIMP_PREVIEW_AREA(preview_d), 0, 0, PREVIEW_SIZE, PREVIEW_SIZE, 0xF2, 0xF1, 0xF0);
-        gimp_preview_area_fill(GIMP_PREVIEW_AREA(preview_ao), 0, 0, PREVIEW_SIZE, PREVIEW_SIZE, 0xF2, 0xF1, 0xF0);
-        gimp_preview_area_fill(GIMP_PREVIEW_AREA(preview_s), 0, 0, PREVIEW_SIZE, PREVIEW_SIZE, 0xF2, 0xF1, 0xF0);
-        gimp_preview_area_fill(GIMP_PREVIEW_AREA(preview_h), 0, 0, PREVIEW_SIZE, PREVIEW_SIZE, 0xF2, 0xF1, 0xF0);
-        gimp_preview_area_fill(GIMP_PREVIEW_AREA(preview_n), 0, 0, PREVIEW_SIZE, PREVIEW_SIZE, 0xF2, 0xF1, 0xF0);
+        gimp_preview_area_fill(GIMP_PREVIEW_AREA(pDrawables.preview_d), 0, 0, PREVIEW_SIZE, PREVIEW_SIZE, 0xF2, 0xF1, 0xF0);
+        gimp_preview_area_fill(GIMP_PREVIEW_AREA(pDrawables.preview_ao), 0, 0, PREVIEW_SIZE, PREVIEW_SIZE, 0xF2, 0xF1, 0xF0);
+        gimp_preview_area_fill(GIMP_PREVIEW_AREA(pDrawables.preview_s), 0, 0, PREVIEW_SIZE, PREVIEW_SIZE, 0xF2, 0xF1, 0xF0);
+        gimp_preview_area_fill(GIMP_PREVIEW_AREA(pDrawables.preview_p), 0, 0, PREVIEW_SIZE, PREVIEW_SIZE, 0xF2, 0xF1, 0xF0);
+        gimp_preview_area_fill(GIMP_PREVIEW_AREA(pDrawables.preview_n), 0, 0, PREVIEW_SIZE, PREVIEW_SIZE, 0xF2, 0xF1, 0xF0);
 
-        _active = 0;
+        _active = 'x';
         return;
     }
 }
@@ -599,10 +726,12 @@ void preview_clicked_normal(GtkWidget *widget, gpointer data)
     
     if ((local_vals.prev == 1) && (nChecked == 1))
     {
-        GimpDrawable *n_drawable = preview_normal_only(local_vals.image_ID, TRUE);
-        _active = 0 ;
-        draw_preview_area_update(preview_n, n_drawable);
-        removeAllLayersExceptMain();
+        gcNeedNormal = 'n';
+        preview_redraw();
+//        preview_normal_only(local_vals.image_ID);
+//        _active = 0 ;
+//        draw_preview_area_update(pDrawables.preview_n, pDrawables.drawable_n);
+//        removeAllLayersExceptMain();
     }
     else if ((local_vals.prev == 1) && (nChecked == 0))
     {
@@ -639,10 +768,12 @@ void preview_clicked_lownormal(GtkWidget *widget, gpointer data)
     
     if ((local_vals.prev == 1) && (nChecked == 1))
     {
-        GimpDrawable *n_drawable = preview_normal_only(local_vals.image_ID, TRUE);
-        _active = 0 ;
-        draw_preview_area_update(preview_n, n_drawable);
-        removeAllLayersExceptMain();
+        gcNeedNormal = 'l';
+        preview_redraw();
+//        preview_normal_only(local_vals.image_ID);
+//        _active = 0 ;
+//        draw_preview_area_update(pDrawables.preview_n, pDrawables.drawable_n);
+//        removeAllLayersExceptMain();
     }
     else if ((local_vals.prev == 1) && (nChecked == 0))
     {
@@ -659,10 +790,12 @@ void preview_clicked_mediumnormal(GtkWidget *widget, gpointer data)
     
     if ((local_vals.prev == 1) && (nChecked == 1))
     {
-        GimpDrawable *n_drawable = preview_normal_only(local_vals.image_ID, TRUE);
-        _active = 0 ;
-        draw_preview_area_update(preview_n, n_drawable);
-        removeAllLayersExceptMain();
+        gcNeedNormal = 'm';
+        preview_redraw();
+//        preview_normal_only(local_vals.image_ID);
+//        _active = 0 ;
+//        draw_preview_area_update(pDrawables.preview_n, pDrawables.drawable_n);
+//        removeAllLayersExceptMain();
     }
     else if ((local_vals.prev == 1) && (nChecked == 0))
     {
@@ -679,10 +812,15 @@ void preview_clicked_highnormal(GtkWidget *widget, gpointer data)
     
     if ((local_vals.prev == 1) && (nChecked == 1))
     {
-        GimpDrawable *n_drawable = preview_normal_only(local_vals.image_ID, TRUE);
-        _active = 0 ;
-        draw_preview_area_update(preview_n, n_drawable);
-        removeAllLayersExceptMain();
+        gcNeedNormal = 'h';
+        preview_redraw();
+//        preview_normal_only(local_vals.image_ID);
+//        _active = 0 ;
+//        draw_preview_area_update(pDrawables.preview_n, pDrawables.drawable_n);
+//        // GimpDrawable *n_drawable = preview_normal_only(local_vals.image_ID);
+//        // _active = 0 ;
+//        // draw_preview_area_update(pDrawables.preview_n, n_drawable);
+//        removeAllLayersExceptMain();
     }
     else if ((local_vals.prev == 1) && (nChecked == 0))
     {
@@ -699,10 +837,12 @@ void preview_clicked_supernormal(GtkWidget *widget, gpointer data)
     
     if ((local_vals.prev == 1) && (nChecked == 1))
     {
-        GimpDrawable *n_drawable = preview_normal_only(local_vals.image_ID, TRUE);
-        _active = 0 ;
-        draw_preview_area_update(preview_n, n_drawable);
-        removeAllLayersExceptMain();
+        gcNeedNormal = 's';
+        preview_redraw();
+//        preview_normal_only(local_vals.image_ID);
+//        _active = 0 ;
+//        draw_preview_area_update(pDrawables.preview_n, pDrawables.drawable_n);
+//        removeAllLayersExceptMain();
     }
     else if ((local_vals.prev == 1) && (nChecked == 0))
     {
@@ -727,12 +867,23 @@ void removeAllLayersExceptMain(void) {
             }
         }
     }
+    
+    gimp_drawable_set_visible(drawableBeginActiveLayer, TRUE);
 }
 
 
 int is_3D_preview_active(void)
 {
-   return(_active);
+    if (_active == 'w') {
+        // g_printf("is_3D_preview_active == w\n");
+        return FALSE;
+    }
+    else if (_active != 'x') {
+        // g_printf("is_3D_preview_active != x\n");
+        return TRUE;
+    }
+    // g_printf("is_3D_preview_active return FALSE\n");
+    return FALSE;
 }
 
 static void CreateOnePreviewFrame(GtkWidget *vbox, GtkWidget **preview, const gchar *szName)
@@ -763,7 +914,7 @@ static void CreateOnePreviewFrame(GtkWidget *vbox, GtkWidget **preview, const gc
     gtk_widget_show(*preview);
 }
 
-void CreateLeftPreviewFrames(GtkWidget *hbox, GimpDrawable *drawable)
+void CreateLeftPreviewFrames(GtkWidget *hbox)
 {
     GtkWidget *vbox = NULL;
 
@@ -773,25 +924,24 @@ void CreateLeftPreviewFrames(GtkWidget *hbox, GimpDrawable *drawable)
     gtk_box_pack_start(GTK_BOX(hbox), vbox, 1, 1, 0);
     gtk_widget_show(vbox);
     
-    CreateOnePreviewFrame(vbox, &preview_d, "Diffuse");
-    CreateOnePreviewFrame(vbox, &preview_ao, "Occlusion");
-    CreateOnePreviewFrame(vbox, &preview_s, "Specular");
+    CreateOnePreviewFrame(vbox, &pDrawables.preview_d, "Diffuse");
+    CreateOnePreviewFrame(vbox, &pDrawables.preview_ao, "Occlusion");
+    CreateOnePreviewFrame(vbox, &pDrawables.preview_s, "Specular");
 }
 
-void CreateRightPreviewToggleButton(GtkWidget *hbox, GimpDrawable *drawable)
+void CreateRightPreviewToggleButton(GtkWidget *hbox)
 {
     GtkWidget *vbox = NULL;
     GtkWidget *btn = NULL;
     
     if (hbox == NULL) return;
-    if (drawable == NULL) return;
 
     vbox = gtk_vbox_new(0, 8);
     gtk_box_pack_start(GTK_BOX(hbox), vbox, 1, 1, 0);
     gtk_widget_show(vbox);
 
-    CreateOnePreviewFrame(vbox, &preview_h, "Displacement");
-    CreateOnePreviewFrame(vbox, &preview_n, "Normals");
+    CreateOnePreviewFrame(vbox, &pDrawables.preview_p, "Displacement");
+    CreateOnePreviewFrame(vbox, &pDrawables.preview_n, "Normals");
 
     if (local_vals.prev == 1) {
         btn = gtk_toggle_button_new_with_label("Preview On");
@@ -930,4 +1080,8 @@ void CreateRightPreviewToggleButton(GtkWidget *hbox, GimpDrawable *drawable)
         gtk_box_pack_start(GTK_BOX(vbox), btn_sn, 0, 0, 0);
         gtk_widget_show(btn_sn);
     }
+    
+    gwNormalLabel = gtk_label_new("");
+    gtk_box_pack_start(GTK_BOX(vbox), gwNormalLabel, 0, 0, 0);
+    gtk_widget_show(gwNormalLabel);
 }

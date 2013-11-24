@@ -51,17 +51,17 @@ void removeAllLayersExceptMain(void);
 
 /*  Global Variables  */
 int _active = 0;
-GtkWidget *btn_d = NULL;
+// GtkWidget *btn_d = NULL; // Diffuse Frame not needed
 
 /*  Local variables  */
-static GtkWidget *btn_ao = NULL;
-static GtkWidget *btn_s = NULL;
+// static GtkWidget *btn_ao = NULL; // Occlusion Frame not needed
+// static GtkWidget *btn_s = NULL; // Specular Frame not needed
 static GtkWidget *btn_n = NULL;
-//static GtkWidget *btn_h = NULL;
-//static GtkWidget *btn_ln = NULL;
-//static GtkWidget *btn_mn = NULL;
-//static GtkWidget *btn_hn = NULL;
-//static GtkWidget *btn_sn = NULL;
+// static GtkWidget *btn_h = NULL; // Displacement Frame not needed
+static GtkWidget *btn_ln = NULL;
+static GtkWidget *btn_mn = NULL;
+static GtkWidget *btn_hn = NULL;
+static GtkWidget *btn_sn = NULL;
 static gint32 drawableAOPrev_ID = -1;
 static gint32 drawableDiffusePrev_ID = -1;
 static gint32 drawableSpecularPrev_ID = -1;
@@ -70,7 +70,7 @@ static gint32 drawableBeginActiveLayer = -1;
 
 
 /*  Private functions  */
-static void draw_preview_area_update(GimpDrawable *drawable) {
+static void draw_preview_area_update(GtkWidget *preview, GimpDrawable *drawable) {
     if(!is_3D_preview_active())
     {
         /** Adding all references to preview for second release. */
@@ -448,46 +448,55 @@ void preview_redraw(void)
     if (local_vals.prev == 1)
     {
         GimpDrawable *drawable = NULL;
-        gint32 AOButton = FALSE;
-        gint32 DButton = FALSE;
-        gint32 SButton = FALSE;
-        gint32 NButton = FALSE;
+        // gint32 AOButton = FALSE;
+        // gint32 DButton = FALSE;
+        // gint32 SButton = FALSE;
+        // gint32 NButton = FALSE;
         
         _active = 0 ;
         
-        if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(btn_ao)) == TRUE) {
+        // if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(btn_ao)) == TRUE) {
             // modifies original so bad, original is not retrievable. 11:39pm
-            drawable = preview_ambient_occlusion_only(local_vals.image_ID, TRUE);
-            AOButton = TRUE;
-        } else if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(btn_d)) == TRUE) {
+            // drawable = preview_ambient_occlusion_only(local_vals.image_ID, TRUE);
+            // draw_preview_area_update(preview_ao, drawable);
+        //     AOButton = TRUE;
+        // } else if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(btn_d)) == TRUE) {
             // works 11:39pm
             // This one had sub functions that when activated did not work.
             // That was fixed at 12:39pm
             drawable = preview_diffuse_only(local_vals.image_ID, TRUE);
-            DButton = TRUE;
-        } else if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(btn_s)) == TRUE) {
+            // draw_preview_area_update(preview_d, drawable);
+        //     DButton = TRUE;
+        // } else if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(btn_s)) == TRUE) {
             // works 11:39pm
-            drawable = preview_specular_only(local_vals.image_ID);
-            SButton = TRUE;
-        } else if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(btn_n)) == TRUE) {
+            // drawable = preview_specular_only(local_vals.image_ID);
+            // draw_preview_area_update(preview_s, drawable);
+        //     SButton = TRUE;
+        // } else if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(btn_n)) == TRUE) {
             // modifies original so bad, original is not retrievable. 11:39pm
             // 11:48pm works
             // fixed by creating a copy of the original layer, modify that only.
-            drawable = preview_normal_only(local_vals.image_ID, TRUE);
-            NButton = TRUE;
-        }
+            // drawable = preview_normal_only(local_vals.image_ID, TRUE);
+            // draw_preview_area_update(preview_n, drawable);
+        //     NButton = TRUE;
+        // }
 
-        draw_preview_area_update(drawable);
+        // draw_preview_one_area_update(drawable);
+        draw_preview_area_update(preview_ao, drawable);
+        draw_preview_area_update(preview_d, drawable);
+        draw_preview_area_update(preview_s, drawable);
+        draw_preview_area_update(preview_n, drawable);
+        removeAllLayersExceptMain();
 
-        if (AOButton) {
-            removeAllLayersExceptMain();
-        } else if (DButton) {
-            removeAllLayersExceptMain();
-        } else if (SButton) {
-            removeAllLayersExceptMain();
-        } else if (NButton) {
-            removeAllLayersExceptMain();
-        }
+//        if (AOButton) {
+//            removeAllLayersExceptMain();
+//        } else if (DButton) {
+//            removeAllLayersExceptMain();
+//        } else if (SButton) {
+//            removeAllLayersExceptMain();
+//        } else if (NButton) {
+//            removeAllLayersExceptMain();
+//        }
     }
 }
 
@@ -506,75 +515,79 @@ void preview_clicked(GtkWidget *widget, gpointer data)
         gtk_button_set_label(GTK_BUTTON(widget), "Preview Off");
 
         // html color: #f2f1f0
-        gimp_preview_area_fill(GIMP_PREVIEW_AREA(preview), 0, 0, PREVIEW_SIZE, PREVIEW_SIZE, 0xF2, 0xF1, 0xF0);
+        gimp_preview_area_fill(GIMP_PREVIEW_AREA(preview_d), 0, 0, PREVIEW_SIZE, PREVIEW_SIZE, 0xF2, 0xF1, 0xF0);
+        gimp_preview_area_fill(GIMP_PREVIEW_AREA(preview_ao), 0, 0, PREVIEW_SIZE, PREVIEW_SIZE, 0xF2, 0xF1, 0xF0);
+        gimp_preview_area_fill(GIMP_PREVIEW_AREA(preview_s), 0, 0, PREVIEW_SIZE, PREVIEW_SIZE, 0xF2, 0xF1, 0xF0);
+        gimp_preview_area_fill(GIMP_PREVIEW_AREA(preview_h), 0, 0, PREVIEW_SIZE, PREVIEW_SIZE, 0xF2, 0xF1, 0xF0);
+        gimp_preview_area_fill(GIMP_PREVIEW_AREA(preview_n), 0, 0, PREVIEW_SIZE, PREVIEW_SIZE, 0xF2, 0xF1, 0xF0);
 
         _active = 0;
         return;
     }
 }
 
-/** Adding the preview area for the second release. */
-void preview_clicked_occlusion(GtkWidget *widget, gpointer data)
-{
-    if (!dialog_is_init) return;
-    if (local_vals.prev == 0) return;
-    int nChecked = 0 ;
-    if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)) == TRUE) nChecked = 1;
-    
-    if ((local_vals.prev == 1) && (nChecked == 1))
-    {
-        GimpDrawable *ao_drawable = preview_ambient_occlusion_only(local_vals.image_ID, TRUE);
-        _active = 0 ;
-        draw_preview_area_update(ao_drawable);
-        removeAllLayersExceptMain();
-    }
-    else if ((local_vals.prev == 1) && (nChecked == 0))
-    {
-        return;
-    }
-}
+///** Adding the preview area for the second release. */
+//void preview_clicked_occlusion(GtkWidget *widget, gpointer data)
+//{
+//    if (!dialog_is_init) return;
+//    if (local_vals.prev == 0) return;
+//    int nChecked = 0 ;
+//    if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)) == TRUE) nChecked = 1;
+//    
+//    if ((local_vals.prev == 1) && (nChecked == 1))
+//    {
+//        GimpDrawable *ao_drawable = preview_ambient_occlusion_only(local_vals.image_ID, TRUE);
+//        _active = 0 ;
+//        draw_preview_one_area_update(ao_drawable);
+//        removeAllLayersExceptMain();
+//    }
+//    else if ((local_vals.prev == 1) && (nChecked == 0))
+//    {
+//        return;
+//    }
+//}
 
-/** Adding the preview area for the second release. */
-void preview_clicked_diffuse(GtkWidget *widget, gpointer data)
-{
-    if (!dialog_is_init) return;
-    if (local_vals.prev == 0) return;
-    int nChecked = 0 ;
-    if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)) == TRUE) nChecked = 1;
-    
-    if ((local_vals.prev == 1) && (nChecked == 1))
-    {
-        GimpDrawable *d_drawable = preview_diffuse_only(local_vals.image_ID, TRUE);
-        _active = 0 ;
-        draw_preview_area_update(d_drawable);
-        removeAllLayersExceptMain();
-    }
-    else if ((local_vals.prev == 1) && (nChecked == 0))
-    {
-        return;
-    }
-}
+///** Adding the preview area for the second release. */
+//void preview_clicked_diffuse(GtkWidget *widget, gpointer data)
+//{
+//    if (!dialog_is_init) return;
+//    if (local_vals.prev == 0) return;
+//    int nChecked = 0 ;
+//    if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)) == TRUE) nChecked = 1;
+//    
+//    if ((local_vals.prev == 1) && (nChecked == 1))
+//    {
+//        GimpDrawable *d_drawable = preview_diffuse_only(local_vals.image_ID, TRUE);
+//        _active = 0 ;
+//        draw_preview_one_area_update(d_drawable);
+//        removeAllLayersExceptMain();
+//    }
+//    else if ((local_vals.prev == 1) && (nChecked == 0))
+//    {
+//        return;
+//    }
+//}
 
-/** Adding the preview area for the second release. */
-void preview_clicked_specular(GtkWidget *widget, gpointer data)
-{
-    if (!dialog_is_init) return;
-    if (local_vals.prev == 0) return;
-    int nChecked = 0 ;
-    if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)) == TRUE) nChecked = 1;
-    
-    if ((local_vals.prev == 1) && (nChecked == 1))
-    {
-        GimpDrawable *s_drawable = preview_specular_only(local_vals.image_ID);
-        _active = 0 ;
-        draw_preview_area_update(s_drawable);
-        removeAllLayersExceptMain();
-    }
-    else if ((local_vals.prev == 1) && (nChecked == 0))
-    {
-        return;
-    }
-}
+///** Adding the preview area for the second release. */
+//void preview_clicked_specular(GtkWidget *widget, gpointer data)
+//{
+//    if (!dialog_is_init) return;
+//    if (local_vals.prev == 0) return;
+//    int nChecked = 0 ;
+//    if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)) == TRUE) nChecked = 1;
+//    
+//    if ((local_vals.prev == 1) && (nChecked == 1))
+//    {
+//        GimpDrawable *s_drawable = preview_specular_only(local_vals.image_ID);
+//        _active = 0 ;
+//        draw_preview_one_area_update(s_drawable);
+//        removeAllLayersExceptMain();
+//    }
+//    else if ((local_vals.prev == 1) && (nChecked == 0))
+//    {
+//        return;
+//    }
+//}
 
 /** Adding the preview area for the second release. */
 void preview_clicked_normal(GtkWidget *widget, gpointer data)
@@ -588,7 +601,107 @@ void preview_clicked_normal(GtkWidget *widget, gpointer data)
     {
         GimpDrawable *n_drawable = preview_normal_only(local_vals.image_ID, TRUE);
         _active = 0 ;
-        draw_preview_area_update(n_drawable);
+        draw_preview_area_update(preview_n, n_drawable);
+        removeAllLayersExceptMain();
+    }
+    else if ((local_vals.prev == 1) && (nChecked == 0))
+    {
+        return;
+    }
+}
+
+//void preview_clicked_displacement(GtkWidget *widget, gpointer data)
+//{
+//    if (!dialog_is_init) return;
+//    if (local_vals.prev == 0) return;
+//    int nChecked = 0 ;
+//    if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)) == TRUE) nChecked = 1;
+//    
+//    if ((local_vals.prev == 1) && (nChecked == 1))
+//    {
+//        GimpDrawable *n_drawable = preview_normal_only(local_vals.image_ID, TRUE);
+//        _active = 0 ;
+//        draw_preview_one_area_update(n_drawable);
+//        removeAllLayersExceptMain();
+//    }
+//    else if ((local_vals.prev == 1) && (nChecked == 0))
+//    {
+//        return;
+//    }
+//}
+
+void preview_clicked_lownormal(GtkWidget *widget, gpointer data)
+{
+    if (!dialog_is_init) return;
+    if (local_vals.prev == 0) return;
+    int nChecked = 0 ;
+    if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)) == TRUE) nChecked = 1;
+    
+    if ((local_vals.prev == 1) && (nChecked == 1))
+    {
+        GimpDrawable *n_drawable = preview_normal_only(local_vals.image_ID, TRUE);
+        _active = 0 ;
+        draw_preview_area_update(preview_n, n_drawable);
+        removeAllLayersExceptMain();
+    }
+    else if ((local_vals.prev == 1) && (nChecked == 0))
+    {
+        return;
+    }
+}
+
+void preview_clicked_mediumnormal(GtkWidget *widget, gpointer data)
+{
+    if (!dialog_is_init) return;
+    if (local_vals.prev == 0) return;
+    int nChecked = 0 ;
+    if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)) == TRUE) nChecked = 1;
+    
+    if ((local_vals.prev == 1) && (nChecked == 1))
+    {
+        GimpDrawable *n_drawable = preview_normal_only(local_vals.image_ID, TRUE);
+        _active = 0 ;
+        draw_preview_area_update(preview_n, n_drawable);
+        removeAllLayersExceptMain();
+    }
+    else if ((local_vals.prev == 1) && (nChecked == 0))
+    {
+        return;
+    }
+}
+
+void preview_clicked_highnormal(GtkWidget *widget, gpointer data)
+{
+    if (!dialog_is_init) return;
+    if (local_vals.prev == 0) return;
+    int nChecked = 0 ;
+    if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)) == TRUE) nChecked = 1;
+    
+    if ((local_vals.prev == 1) && (nChecked == 1))
+    {
+        GimpDrawable *n_drawable = preview_normal_only(local_vals.image_ID, TRUE);
+        _active = 0 ;
+        draw_preview_area_update(preview_n, n_drawable);
+        removeAllLayersExceptMain();
+    }
+    else if ((local_vals.prev == 1) && (nChecked == 0))
+    {
+        return;
+    }
+}
+
+void preview_clicked_supernormal(GtkWidget *widget, gpointer data)
+{
+    if (!dialog_is_init) return;
+    if (local_vals.prev == 0) return;
+    int nChecked = 0 ;
+    if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)) == TRUE) nChecked = 1;
+    
+    if ((local_vals.prev == 1) && (nChecked == 1))
+    {
+        GimpDrawable *n_drawable = preview_normal_only(local_vals.image_ID, TRUE);
+        _active = 0 ;
+        draw_preview_area_update(preview_n, n_drawable);
         removeAllLayersExceptMain();
     }
     else if ((local_vals.prev == 1) && (nChecked == 0))
@@ -622,21 +735,14 @@ int is_3D_preview_active(void)
    return(_active);
 }
 
-void CreatePreviewToggleButton(GtkWidget *hbox, GimpDrawable *drawable)
+static void CreateOnePreviewFrame(GtkWidget *vbox, GtkWidget **preview, const gchar *szName)
 {
     GtkWidget *frame = NULL;
-    GtkWidget *vbox = NULL;
     GtkWidget *abox = NULL;
-    GtkWidget *btn = NULL;
     
-    if (hbox == NULL) return;
-    if (drawable == NULL) return;
+    if (vbox == NULL) return;
 
-    vbox = gtk_vbox_new(0, 8);
-    gtk_box_pack_start(GTK_BOX(hbox), vbox, 1, 1, 0);
-    gtk_widget_show(vbox);
-
-    frame = gtk_frame_new("Preview");
+    frame = gtk_frame_new(szName);
     gtk_box_pack_start(GTK_BOX(vbox), frame, 0, 0, 0);
     gtk_widget_show(frame);
 
@@ -650,11 +756,42 @@ void CreatePreviewToggleButton(GtkWidget *hbox, GimpDrawable *drawable)
     gtk_container_add(GTK_CONTAINER(abox), frame);
     gtk_widget_show(frame);
 
-    preview = gimp_preview_area_new();
-    gimp_preview_area_set_max_size(GIMP_PREVIEW_AREA(preview), PREVIEW_SIZE, PREVIEW_SIZE);
-    gtk_drawing_area_size(GTK_DRAWING_AREA(preview), PREVIEW_SIZE, PREVIEW_SIZE);
-    gtk_container_add(GTK_CONTAINER(frame), preview);
-    gtk_widget_show(preview);
+    *preview = gimp_preview_area_new();
+    gimp_preview_area_set_max_size(GIMP_PREVIEW_AREA(*preview), PREVIEW_SIZE, PREVIEW_SIZE);
+    gtk_drawing_area_size(GTK_DRAWING_AREA(*preview), PREVIEW_SIZE, PREVIEW_SIZE);
+    gtk_container_add(GTK_CONTAINER(frame), *preview);
+    gtk_widget_show(*preview);
+}
+
+void CreateLeftPreviewFrames(GtkWidget *hbox, GimpDrawable *drawable)
+{
+    GtkWidget *vbox = NULL;
+
+    if (hbox == NULL) return;
+
+    vbox = gtk_vbox_new(0, 8);
+    gtk_box_pack_start(GTK_BOX(hbox), vbox, 1, 1, 0);
+    gtk_widget_show(vbox);
+    
+    CreateOnePreviewFrame(vbox, &preview_d, "Diffuse");
+    CreateOnePreviewFrame(vbox, &preview_ao, "Occlusion");
+    CreateOnePreviewFrame(vbox, &preview_s, "Specular");
+}
+
+void CreateRightPreviewToggleButton(GtkWidget *hbox, GimpDrawable *drawable)
+{
+    GtkWidget *vbox = NULL;
+    GtkWidget *btn = NULL;
+    
+    if (hbox == NULL) return;
+    if (drawable == NULL) return;
+
+    vbox = gtk_vbox_new(0, 8);
+    gtk_box_pack_start(GTK_BOX(hbox), vbox, 1, 1, 0);
+    gtk_widget_show(vbox);
+
+    CreateOnePreviewFrame(vbox, &preview_h, "Displacement");
+    CreateOnePreviewFrame(vbox, &preview_n, "Normals");
 
     if (local_vals.prev == 1) {
         btn = gtk_toggle_button_new_with_label("Preview On");
@@ -676,59 +813,59 @@ void CreatePreviewToggleButton(GtkWidget *hbox, GimpDrawable *drawable)
         }
     }
     
-    btn_d = gtk_radio_button_new_with_label_from_widget(NULL, "Diffuse");
-    if (btn_d != NULL)
-    {
-        // g_object_set_data(G_OBJECT(btn_d), "drawable", drawable);
-    
-        gtk_signal_connect(GTK_OBJECT(btn_d), "clicked",
-                           GTK_SIGNAL_FUNC(preview_clicked_diffuse), 0);
+//    btn_d = gtk_radio_button_new_with_label_from_widget(NULL, "Diffuse");
+//    if (btn_d != NULL)
+//    {
+//        // g_object_set_data(G_OBJECT(btn_d), "drawable", drawable);
+//    
+//        gtk_signal_connect(GTK_OBJECT(btn_d), "clicked",
+//                           GTK_SIGNAL_FUNC(preview_clicked_diffuse), 0);
+//
+//        gtk_box_pack_start(GTK_BOX(vbox), btn_d, 0, 0, 0);
+//        gtk_widget_show(btn_d);
+//        // if ((local_vals.prev == 1) && (_diffuse_button == 1))
+//        // {
+//        
+//        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(btn_d), TRUE);
+//        
+//        // }
+//    }
+//    
+//    if (btn_d == NULL) return;
+//
+//    btn_ao = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(btn_d), "Occlusion");
+//    if (btn_ao != NULL)
+//    {
+//        // g_object_set_data(G_OBJECT(btn_ao), "drawable", drawable);
+//    
+//        gtk_signal_connect(GTK_OBJECT(btn_ao), "clicked",
+//                           GTK_SIGNAL_FUNC(preview_clicked_occlusion), 0);
+//
+//        gtk_box_pack_start(GTK_BOX(vbox), btn_ao, 0, 0, 0);
+//        gtk_widget_show(btn_ao);
+//        // if ((local_vals.prev == 1) && (_occlusion_button == 1))
+//        // {
+//        //    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(btn_ao), TRUE);
+//        // }
+//    }
+//
+//    btn_s = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(btn_d), "Specular");
+//    if (btn_s != NULL)
+//    {
+//        // g_object_set_data(G_OBJECT(btn_s), "drawable", drawable);
+//    
+//        gtk_signal_connect(GTK_OBJECT(btn_s), "clicked",
+//                           GTK_SIGNAL_FUNC(preview_clicked_specular), 0);
+//
+//        gtk_box_pack_start(GTK_BOX(vbox), btn_s, 0, 0, 0);
+//        gtk_widget_show(btn_s);
+//        // if ((local_vals.prev == 1) && (_specular_button == 1))
+//        // {
+//        //    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(btn_s), TRUE);
+//        // }
+//    }
 
-        gtk_box_pack_start(GTK_BOX(vbox), btn_d, 0, 0, 0);
-        gtk_widget_show(btn_d);
-        // if ((local_vals.prev == 1) && (_diffuse_button == 1))
-        // {
-        
-        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(btn_d), TRUE);
-        
-        // }
-    }
-    
-    if (btn_d == NULL) return;
-
-    btn_ao = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(btn_d), "Occlusion");
-    if (btn_ao != NULL)
-    {
-        // g_object_set_data(G_OBJECT(btn_ao), "drawable", drawable);
-    
-        gtk_signal_connect(GTK_OBJECT(btn_ao), "clicked",
-                           GTK_SIGNAL_FUNC(preview_clicked_occlusion), 0);
-
-        gtk_box_pack_start(GTK_BOX(vbox), btn_ao, 0, 0, 0);
-        gtk_widget_show(btn_ao);
-        // if ((local_vals.prev == 1) && (_occlusion_button == 1))
-        // {
-        //    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(btn_ao), TRUE);
-        // }
-    }
-
-    btn_s = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(btn_d), "Specular");
-    if (btn_s != NULL)
-    {
-        // g_object_set_data(G_OBJECT(btn_s), "drawable", drawable);
-    
-        gtk_signal_connect(GTK_OBJECT(btn_s), "clicked",
-                           GTK_SIGNAL_FUNC(preview_clicked_specular), 0);
-
-        gtk_box_pack_start(GTK_BOX(vbox), btn_s, 0, 0, 0);
-        gtk_widget_show(btn_s);
-        // if ((local_vals.prev == 1) && (_specular_button == 1))
-        // {
-        //    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(btn_s), TRUE);
-        // }
-    }
-
-    btn_n = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(btn_d), "Normal");
+    btn_n = gtk_radio_button_new_with_label_from_widget(NULL, "Normal");
     if (btn_n != NULL)
     {
         // g_object_set_data(G_OBJECT(btn_n), "drawable", drawable);
@@ -753,14 +890,44 @@ void CreatePreviewToggleButton(GtkWidget *hbox, GimpDrawable *drawable)
 //        gtk_box_pack_start(GTK_BOX(vbox), btn_h, 0, 0, 0);
 //        gtk_widget_show(btn_h);
 //    }
-//
-//    btn_ln = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(btn_d), "low normal");
-//    if (btn_ln != NULL)
-//    {
-//        gtk_signal_connect(GTK_OBJECT(btn_ln), "clicked",
-//                           GTK_SIGNAL_FUNC(preview_clicked_lownormal), 0);
-//
-//        gtk_box_pack_start(GTK_BOX(vbox), btn_ln, 0, 0, 0);
-//        gtk_widget_show(btn_ln);
-//    }
+
+    btn_ln = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(btn_n), "low normal");
+    if (btn_ln != NULL)
+    {
+        gtk_signal_connect(GTK_OBJECT(btn_ln), "clicked",
+                           GTK_SIGNAL_FUNC(preview_clicked_lownormal), 0);
+
+        gtk_box_pack_start(GTK_BOX(vbox), btn_ln, 0, 0, 0);
+        gtk_widget_show(btn_ln);
+    }
+
+    btn_mn = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(btn_n), "medium normal");
+    if (btn_mn != NULL)
+    {
+        gtk_signal_connect(GTK_OBJECT(btn_mn), "clicked",
+                           GTK_SIGNAL_FUNC(preview_clicked_mediumnormal), 0);
+
+        gtk_box_pack_start(GTK_BOX(vbox), btn_mn, 0, 0, 0);
+        gtk_widget_show(btn_mn);
+    }
+
+    btn_hn = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(btn_n), "high normal");
+    if (btn_hn != NULL)
+    {
+        gtk_signal_connect(GTK_OBJECT(btn_hn), "clicked",
+                           GTK_SIGNAL_FUNC(preview_clicked_highnormal), 0);
+
+        gtk_box_pack_start(GTK_BOX(vbox), btn_hn, 0, 0, 0);
+        gtk_widget_show(btn_hn);
+    }
+
+    btn_sn = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(btn_n), "super normal");
+    if (btn_sn != NULL)
+    {
+        gtk_signal_connect(GTK_OBJECT(btn_sn), "clicked",
+                           GTK_SIGNAL_FUNC(preview_clicked_supernormal), 0);
+
+        gtk_box_pack_start(GTK_BOX(vbox), btn_sn, 0, 0, 0);
+        gtk_widget_show(btn_sn);
+    }
 }

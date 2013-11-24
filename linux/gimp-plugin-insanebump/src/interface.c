@@ -46,7 +46,11 @@
 /*  Global variables  */
 PlugInVals local_vals;
 int update_preview = 0;
-GtkWidget *preview = NULL;
+GtkWidget *preview_d = NULL;
+GtkWidget *preview_ao = NULL;
+GtkWidget *preview_s = NULL;
+GtkWidget *preview_h = NULL;
+GtkWidget *preview_n = NULL;
 gint dialog_is_init = 0 ;
 
 
@@ -479,7 +483,8 @@ gint InsaneBumpDialog(GimpDrawable *drawable,
     /**
      * Create the Preview area.
      */
-    CreatePreviewToggleButton(hbox, drawable);
+    CreateLeftPreviewFrames(hbox, drawable);
+    CreateRightPreviewToggleButton(hbox, drawable);
 
     /**
      * Create a table to place all the right hand items into.
@@ -621,7 +626,7 @@ gint InsaneBumpDialog(GimpDrawable *drawable,
     
     _active = 0;
     
-    preview_clicked_diffuse(btn_d, NULL);
+    preview_redraw();
 
     gtk_main();
 

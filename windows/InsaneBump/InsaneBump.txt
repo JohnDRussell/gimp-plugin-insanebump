@@ -1,0 +1,1 @@
+./Debug/scale.o ./Debug/gimp-insanebump.o ./Debug/InsaneBump.o ./Debug/normalmap.o ./Debug/PluginConnectors.o ./Debug/InsaneBumpDialog.o  

@@ -1,3 +1,0 @@
-scale.o: scale.c scale.h
-
-scale.h:

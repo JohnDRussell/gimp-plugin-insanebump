@@ -39,7 +39,7 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 INSTALL = /usr/bin/install -c
 INSTALL_DATA = ${INSTALL} -m 644
 
-CC = /usr/bin/gcc
+CC = gcc
 GENCAT = @GENCAT@
 GMSGFMT = /usr/bin/msgfmt
 MSGFMT = /usr/bin/msgfmt
@@ -50,7 +50,7 @@ MSGMERGE = INTLTOOL_EXTRACT=$(INTLTOOL_EXTRACT) $(INTLTOOL_UPDATE) --gettext-pac
 GENPOT   = INTLTOOL_EXTRACT=$(INTLTOOL_EXTRACT) $(INTLTOOL_UPDATE) --gettext-package $(GETTEXT_PACKAGE) --pot
 
 DEFS = -DHAVE_CONFIG_H
-CFLAGS = -g3 -gdwarf-2 -Wall
+CFLAGS = -O2 -Wall
 CPPFLAGS = 
 
 INCLUDES = -I.. -I$(top_srcdir)/intl

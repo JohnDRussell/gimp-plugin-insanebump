@@ -13,12 +13,19 @@
       <df name="po">
       </df>
       <df name="src">
+        <df name="Debug">
+        </df>
         <df name="objects">
           <in>cube.h</in>
           <in>quad.h</in>
           <in>sphere.h</in>
           <in>teapot.h</in>
           <in>torus.h</in>
+        </df>
+        <df name="Release">
+        </df>
+        <df name="win32c">
+          <in>config.h</in>
         </df>
         <in>InsaneBump.c</in>
         <in>InsaneBump.h</in>
@@ -81,6 +88,13 @@
         <terminal-type>0</terminal-type>
         <remove-instrumentation>0</remove-instrumentation>
         <environment>
+          <variable name="__CND_TOOLS__"
+                    value="g++-4.6:gcc-4.6:gcc:c++:g++:clang:clang++:icc:icpc:ifort:gfortran:g77:g90:g95:cc:CC:ffortran:f77:f90:f95:ar:ld"/>
+          <variable name="__CND_BUILD_LOG__" value="/tmp/exec810239504658335542.log"/>
+          <variable name="LD_PRELOAD"
+                    value="libBuildTrace.so:libBuildTrace.so:libBuildTrace.so:libBuildTrace.so:libBuildTrace.so:libBuildTrace.so:libBuildTrace.so:libBuildTrace.so:libBuildTrace.so:libBuildTrace.so:libBuildTrace.so"/>
+          <variable name="LD_LIBRARY_PATH"
+                    value="/home/derby/Public/netbeans-7.4/cnd/bin/Linux-x86:/home/derby/Public/netbeans-7.4/cnd/bin/Linux-x86_64:/home/derby/Public/netbeans-7.4/cnd/bin/Linux-x86:/home/derby/Public/netbeans-7.4/cnd/bin/Linux-x86_64:/home/derby/Public/netbeans-7.4/cnd/bin/Linux-x86:/home/derby/Public/netbeans-7.4/cnd/bin/Linux-x86_64:/home/derby/Public/netbeans-7.4/cnd/bin/Linux-x86:/home/derby/Public/netbeans-7.4/cnd/bin/Linux-x86_64:/home/derby/Public/netbeans-7.4/cnd/bin/Linux-x86:/home/derby/Public/netbeans-7.4/cnd/bin/Linux-x86_64:/home/derby/Public/netbeans-7.4/cnd/bin/Linux-x86:/home/derby/Public/netbeans-7.4/cnd/bin/Linux-x86_64:/home/derby/Public/netbeans-7.4/cnd/bin/Linux-x86:/home/derby/Public/netbeans-7.4/cnd/bin/Linux-x86_64:/home/derby/Public/netbeans-7.4/cnd/bin/Linux-x86:/home/derby/Public/netbeans-7.4/cnd/bin/Linux-x86_64:/home/derby/Public/netbeans-7.4/cnd/bin/Linux-x86:/home/derby/Public/netbeans-7.4/cnd/bin/Linux-x86_64:/home/derby/Public/netbeans-7.4/cnd/bin/Linux-x86:/home/derby/Public/netbeans-7.4/cnd/bin/Linux-x86_64:/home/derby/Public/netbeans-7.4/cnd/bin/Linux-x86:/home/derby/Public/netbeans-7.4/cnd/bin/Linux-x86_64:/usr/lib/jvm/jdk1.7.0/jre/lib/amd64:/usr/lib/jvm/jdk1.7.0/jre/lib/i386:"/>
         </environment>
       </runprofile>
     </conf>

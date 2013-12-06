@@ -84,7 +84,7 @@ const PlugInVals default_vals =
 {
     0,
     0,
-    1,
+    0,
     2,
     1,
     64,
@@ -127,7 +127,7 @@ query (void)
         {GIMP_PDB_DRAWABLE, "drawable", "Input drawable"},
         {GIMP_PDB_INT32, "remove_lighting", "Remove Lighting TRUE or FALSE default FALSE"},
         {GIMP_PDB_INT32, "resizie", "Upscale(HD) TRUE or FALSE default FALSE"},
-        {GIMP_PDB_INT32, "tile", "Tile TRUE or FALSE default TRUE"},
+        {GIMP_PDB_INT32, "tile", "Tile TRUE or FALSE default FALSE"},
         {GIMP_PDB_INT32, "new_width", "New Width(Integer Times larger) default 2"},
         {GIMP_PDB_INT32, "edge_specular", "Edge Enhancing Specular TRUE or FALSE default TRUE"},
         {GIMP_PDB_INT32, "def_specular", "Specular Definition(0-255) default 64"},

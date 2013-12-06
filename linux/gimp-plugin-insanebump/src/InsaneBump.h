@@ -70,9 +70,9 @@ enum DUDV_TYPE
    MAX_DUDV_TYPE
 };
 
-void blur(gint32 image_ID, gint32 diffuse_ID, gfloat width, gfloat height, gint32 passes, gint32 normal);
-void doBaseMap(gint32 image_ID, gint32 diffuse_ID, gfloat Depth, gint32 passes);
-void shapeRecognise(gint32 image_ID, gint32 normalmap_ID, gdouble strength);
+void blur(gint32 image_ID, gint32 diffuse_ID, gfloat width, gfloat height, gint32 passes, gint32 normal, gint defAO);
+void doBaseMap(gint32 image_ID, gint32 diffuse_ID, gfloat Depth, gint32 passes, gint defAO);
+void shapeRecognise(gint32 image_ID, gint32 normalmap_ID, gdouble strength, gint defAO);
 void sharpen(gint32 image_ID, gint32 diffuse, gfloat depth, gint32 filterSize, gdouble strength);
 gint32 normalmap(gint32 drawable_ID, gboolean preview_mode);
 gint32 render(gint32 img_ID, PlugInVals *vals);
@@ -80,8 +80,8 @@ gint32 specularEdge(gint32 image_ID, const gchar *file_name, gint defin);
 gint32 specularSmooth(gint32 image_ID, const gchar *file_name, gint defin);
 void removeShading(gint32 image_ID);
 void removeShadingPreview(gint32 image_ID, gint32 noise_val);
-gint32 specularEdgeWorker(gint32 image_ID, gint defin, gint32 bShowProgress);
-gint32 specularSmoothWorker(gint32 image_ID, gint defin, gint32 bShowProgress);
+gint32 specularEdgeWorker(gint32 image_ID, gint defin, gint defAO, gint32 bShowProgress);
+gint32 specularSmoothWorker(gint32 image_ID, gint defin, gint defAO, gint32 bShowProgress);
 void removeGivenLayerFromImage(gint32 image_ID, gint32 layer_ID);
 
 #endif /** INSANE_BUMP_HEADER_GUARD */

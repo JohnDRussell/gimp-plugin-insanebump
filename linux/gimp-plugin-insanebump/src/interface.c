@@ -68,7 +68,8 @@ static void do_cleanup(gpointer data)
 
 static gint idle_callback(gpointer data)
 {
-   if ((update_preview) && (!is_3D_preview_active()))
+   // if ((update_preview) && (!is_3D_preview_active()))
+   if ((update_preview) && (_active == 'x'))
    {
         preview_redraw();
    }
@@ -609,7 +610,7 @@ gint InsaneBumpDialog(GimpDrawable *drawable,
 
     update_preview = 1;
 
-    gtk_timeout_add(100, idle_callback, drawable);
+    gtk_timeout_add(300, idle_callback, drawable);
    
     runme = 0;
 

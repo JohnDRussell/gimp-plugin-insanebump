@@ -212,7 +212,7 @@ static void preview_alt_normal(gint32 image_ID) {
      * Since copied, don't need this here.
      * blur seems to not create an extra layer.
      */
-    blur(image_ID, diffuse_ID, wsize, hsize, local_vals.LargeDetails, 0);
+    blur(image_ID, diffuse_ID, wsize, hsize, local_vals.LargeDetails, 0, local_vals.ao);
 
     normalmap_ID = gimp_image_get_active_layer(image_ID);
     if(local_vals.smoothstep)
@@ -238,7 +238,7 @@ static void preview_alt_normal(gint32 image_ID) {
 
     /** Extra layer here. */
     /** LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL */
-    doBaseMap(image_ID, diffuse_ID, local_vals.Depth, local_vals.LargeDetails);
+    doBaseMap(image_ID, diffuse_ID, local_vals.Depth, local_vals.LargeDetails, local_vals.ao);
     normalmap_ID = gimp_image_get_active_layer(image_ID);
     
     /** Here is _ln low normal. l l l l l l l l l l l l l l l l */
@@ -248,7 +248,7 @@ static void preview_alt_normal(gint32 image_ID) {
 
     /** Creates an extra layer. */
     /** LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL */
-    shapeRecognise(image_ID, normalmap_ID, local_vals.ShapeRecog);
+    shapeRecognise(image_ID, normalmap_ID, local_vals.ShapeRecog, local_vals.ao);
     if(local_vals.smoothstep)
     {
         normalmap_ID = gimp_image_get_active_layer(image_ID);
@@ -387,12 +387,19 @@ static void preview_ambient_occlusion_only(gint32 image_ID) {
      * Add the "f" here to signify float in c language.
      * Removed 0.0 on first param and changed to 0 because boolean.
      */
-    if (plug_in_colors_channel_mixer_connector(image_ID, drawableAO_ID, 0, -200.0f, 0.0f, 0.0f, 0.0f, -200.0f, 0.0f, 0.0f, 0.0f, 1.0f) != 1) return;
+    
+    /** Explained on line ~1300 of InsaneBump.c */
+    // if (plug_in_colors_channel_mixer_connector(image_ID, drawableAO_ID, 0, -200.0f, 0.0f, 0.0f, 0.0f, -200.0f, 0.0f, 0.0f, 0.0f, 1.0f) != 1) return;
+    if (plug_in_colors_channel_mixer_connector(image_ID, drawableAO_ID, 0, -1.0f, 0.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f, 0.0f, 1.0f) != 1) return;
 
+    g_print("ao channel complete\n");
     gimp_desaturate(drawableAO_ID);
+    g_print("ao desat complete\n");
     gimp_levels_stretch(drawableAO_ID);
+    g_print("ao levels complete\n");
     
     pDrawables.drawable_ao = gimp_drawable_get(drawableAO_ID);
+    g_print("ao drawable complete\n");
 }
 
 static void preview_specular_only(gint32 image_ID) {
@@ -403,7 +410,8 @@ static void preview_specular_only(gint32 image_ID) {
 
     if(local_vals.EdgeSpecular)
     {
-        drawableSpecular_ID = specularEdgeWorker(image_ID, local_vals.defSpecular, FALSE);
+        drawableSpecular_ID = specularEdgeWorker(image_ID, local_vals.defSpecular, local_vals.ao, FALSE);
+        g_print("specularEdgeWorker complete\n");
         if (drawableSpecular_ID == -1) {
             gimp_message("Specular Edge Worker returned -1!");
             nResult = 0;
@@ -411,7 +419,7 @@ static void preview_specular_only(gint32 image_ID) {
     }
     else
     {
-        drawableSpecular_ID = specularSmoothWorker(image_ID, local_vals.defSpecular, FALSE);
+        drawableSpecular_ID = specularSmoothWorker(image_ID, local_vals.defSpecular, local_vals.ao, FALSE);
         if (drawableSpecular_ID == -1) {
             gimp_message("Specular Smooth Worker returned -1!");
             nResult = 0;
@@ -457,6 +465,7 @@ void preview_redraw(void)
     if (is_3D_preview_active()) return;
     if (local_vals.prev == 1)
     {
+        _active = 't'; // for start
         if (pDrawables.drawable_d != NULL) {
             gimp_drawable_detach(pDrawables.drawable_d);
             pDrawables.drawable_d = NULL;

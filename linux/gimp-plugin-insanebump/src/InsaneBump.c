@@ -102,8 +102,10 @@ void set_progress_label_as_file(GString *file_name_given, const gchar *szSuffix)
     }
 }
 
-gint32 specularEdgeWorker(gint32 image_ID, gint defin, gint32 bShowProgress)
+gint32 specularEdgeWorker(gint32 image_ID, gint defin, gint defAO, gint32 bShowProgress)
 {
+    gfloat secondRadius = defAO * 0.16f;
+    g_print("specularEdgeWorker secondRadius = %02f\n", secondRadius);
     /** Get the active layer. */
     gint32 drawable_ID = gimp_image_get_active_layer(image_ID);
     /** Copy the active layer. */
@@ -111,6 +113,8 @@ gint32 specularEdgeWorker(gint32 image_ID, gint defin, gint32 bShowProgress)
     if (bShowProgress == TRUE) {
         gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR(progress), 0.92);
     }
+    
+    g_print("specularEdgeWorker secondRadius = %02f drawable_ID=%d, newlayer_ID=%d\n", secondRadius, drawable_ID, newlayer_ID);
 
     /** Add the copied layer to the image file. */
     gimp_image_add_layer(image_ID, newlayer_ID, -1);
@@ -151,8 +155,19 @@ gint32 specularEdgeWorker(gint32 image_ID, gint defin, gint32 bShowProgress)
      * 
      * Add the "f" here to signify float in c language.
      * Radius Parameters 2 and 3 are in pixels.
+     * 
+     * Apply the AO value here.  50 will give 1.0 and 8.0
+     * 30 will give 1.0 and 5.0,  90 will give 1.0 and 12.0
+     * 
+     * So multiply the AO times 0.16 and place inside the second radius
+     * 
+     * Could also play with contrast/brightness in the future.
+     * 
+     * These adjustments also apply to specularSmoothWorker too.
+     * 
      */
-    if (plug_in_dog_connector(image_ID, newlayer_ID, 1.0, 8.0, 1, 0) != 1) return 0;
+    // if (plug_in_dog_connector(image_ID, newlayer_ID, 1.0, 8.0, 1, 0) != 1) return 0;
+    if (plug_in_dog_connector(image_ID, newlayer_ID, 1.0, secondRadius, 1, 0) != 1) return 0;
     if (bShowProgress == TRUE) {
         gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR(progress), 0.94);
     }
@@ -261,16 +276,19 @@ gint32 specularEdgeOriginal(gint32 image_ID, const gchar *file_name, gint defin)
     return 1;
 }	
 
-gint32 specularSmoothWorker(gint32 image_ID, gint defin, gint32 bShowProgress)
+gint32 specularSmoothWorker(gint32 image_ID, gint defin, gint defAO, gint32 bShowProgress)
 {
     /** Get active layer. */
     gint32 drawable_ID = gimp_image_get_active_layer(image_ID);
     /** Copy active layer. */
     gint32 newlayer_ID = gimp_layer_copy (drawable_ID);
+    gfloat firstRadius = defAO * 0.16;
     /** Add the copied layer to the image file. */
     gimp_image_add_layer(image_ID, newlayer_ID, -1);
     /** Set the copied layer to active. */
     gimp_image_set_active_layer(image_ID, newlayer_ID);
+
+    g_print("specularSmoothWorker firstRadius = %02f\n", firstRadius);
     
     /**
      * Desaturate the active layer.
@@ -310,7 +328,8 @@ gint32 specularSmoothWorker(gint32 image_ID, gint defin, gint32 bShowProgress)
      * 
      * Add the "f" here to signify float in c language.
      */
-    if (plug_in_dog_connector(image_ID, newlayer_ID, 8.0f, 1.0f, 1, 0) != 1) return 0;
+    // if (plug_in_dog_connector(image_ID, newlayer_ID, 8.0f, 1.0f, 1, 0) != 1) return 0;
+    if (plug_in_dog_connector(image_ID, newlayer_ID, firstRadius, 1.0f, 1, 0) != 1) return 0;
     if (bShowProgress == TRUE) {
         gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR(progress), 0.94);
     }
@@ -350,7 +369,7 @@ gint32 specularSmoothWorker(gint32 image_ID, gint defin, gint32 bShowProgress)
     return drawable_ID;
 }
 
-gint32 specularDo(gint32 image_ID, const gchar *file_name, gint defin, gint32 edgeSpecular)
+gint32 specularDo(gint32 image_ID, const gchar *file_name, gint defin, gint defAO, gint32 edgeSpecular)
 {
     GString *file_name_temp = NULL;
     gint32 drawable_ID = -1;
@@ -359,9 +378,9 @@ gint32 specularDo(gint32 image_ID, const gchar *file_name, gint defin, gint32 ed
     }
     
     if (edgeSpecular) {
-        drawable_ID = specularEdgeWorker(image_ID, defin, TRUE);
+        drawable_ID = specularEdgeWorker(image_ID, defin, defAO, TRUE);
     } else {
-        drawable_ID = specularSmoothWorker(image_ID, defin, TRUE);
+        drawable_ID = specularSmoothWorker(image_ID, defin, defAO, TRUE);
     }
     
     if (drawable_ID != -1) {
@@ -589,7 +608,7 @@ void removeShadingPreview(gint32 image_ID, gint32 noise_val)
     // if (noise_val) removeGivenLayerFromImage(image_ID, drawable_ID);
 }
 
-void blur(gint32 image_ID, gint32 diffuse_ID, gfloat width, gfloat height, gint32 passes, gint32 normal)
+void blur(gint32 image_ID, gint32 diffuse_ID, gfloat width, gfloat height, gint32 passes, gint32 normal, gint defAO)
 {
     gint32 drawable_ID = 0 ;
     gint32 i = 0 ;
@@ -597,6 +616,7 @@ void blur(gint32 image_ID, gint32 diffuse_ID, gfloat width, gfloat height, gint3
     /** Copy current layer. */
     /** LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL */
     gint32 desatdiffuse_ID = gimp_layer_copy (diffuse_ID);
+    gfloat fMultiplier = defAO / 1000.0f;
     /** Add the new layer to the image. */
     gimp_image_add_layer(image_ID, desatdiffuse_ID, -1);
     /** Set the new layer as the active layer. */
@@ -605,6 +625,8 @@ void blur(gint32 image_ID, gint32 diffuse_ID, gfloat width, gfloat height, gint3
     {
         gimp_desaturate(desatdiffuse_ID);
     }
+    
+    g_print("blur fMultiplier = %02f\n", fMultiplier);
 
     /** This gets repeated Large Details times!!! A new layer each time. */
     for (i = 0; i < passes; i++)
@@ -627,7 +649,7 @@ void blur(gint32 image_ID, gint32 diffuse_ID, gfloat width, gfloat height, gint3
          * 
          * Add the "f" here to signify float in c language.
          */
-        if (plug_in_gauss_connector(image_ID, newlayer_ID, width * 0.05f, height * 0.05f, 0) != 1) return;
+        if (plug_in_gauss_connector(image_ID, newlayer_ID, width * fMultiplier, height * fMultiplier, 0) != 1) return;
 
         /** 5 is GIMP_OVERLAY_MODE replaced. */
         gimp_layer_set_mode(newlayer_ID, GIMP_OVERLAY_MODE);
@@ -643,6 +665,10 @@ void blur(gint32 image_ID, gint32 diffuse_ID, gfloat width, gfloat height, gint3
     
     if (normal == 1)
     {
+        gfloat fScalar = defAO / 50.0f;
+        
+        g_print("blur fScalar = %02f\n", fScalar);
+
         /**
          * Filter "Normalmap" applied
          * Non-Standard plug-in. Source code included.
@@ -652,7 +678,8 @@ void blur(gint32 image_ID, gint32 diffuse_ID, gfloat width, gfloat height, gint3
          */
         nmapvals.filter = 0;
         nmapvals.minz = 0.0f;
-        nmapvals.scale = 1.0f;
+        // nmapvals.scale = 1.0f;
+        nmapvals.scale = fScalar;
         nmapvals.wrap = 0;
         nmapvals.height_source = 0;
         nmapvals.alpha = 0;
@@ -689,11 +716,15 @@ void sharpen(gint32 image_ID, gint32 diffuse, gfloat depth, gint32 filterSize, g
      * 
      * original values:
      * plug_in_normalmap_derby(image_ID, sharpnormal_ID, 0, 0.0, depth, filterSize, 0, 0, 0, 0, 0, 1, 0, 0.0, sharpnormal_ID);
+     * Looks like an error 12-5-2013 2:03pm  filterSize should be for filter not wrap!  wrap should just be 0
+     * plug_in_normalmap_derby(image_ID, sharpnormal_ID, 0, 0.0, depth, filterSize, 0, 0, 0, 0, 0, 1, 0, 0.0, sharpnormal_ID);
      */
-    nmapvals.filter = 0;
+    // nmapvals.filter = 0;
+    nmapvals.filter = filterSize; // 12-5-2013 2:03pm
     nmapvals.minz = 0.0f;
     nmapvals.scale = depth;
-    nmapvals.wrap = filterSize;
+    // nmapvals.wrap = filterSize;
+    nmapvals.wrap = 0; // 12-5-2013 2:03pm
     nmapvals.height_source = 0;
     nmapvals.alpha = 0;
     nmapvals.conversion = 0;
@@ -725,15 +756,21 @@ void sharpen(gint32 image_ID, gint32 diffuse, gfloat depth, gint32 filterSize, g
     gimp_image_raise_layer_to_top(image_ID, sharpnormal_ID);
 }
 
-void shapeRecognise(gint32 image_ID, gint32 normalmap_ID, gdouble strength)
+void shapeRecognise(gint32 image_ID, gint32 normalmap_ID, gdouble strength, gint defAO)
 {
     /** Copy given layer. */
     /** LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL */
     gint32 blurnormal_ID = gimp_layer_copy(normalmap_ID);
+    gfloat fGaussFactor = defAO * 0.40f;
+    gfloat fScalar = defAO / 50.0f;
     /** Add new layer to image. */
     gimp_image_add_layer(image_ID, blurnormal_ID, -1);
     /** Set new layer as the active layer. */
     gimp_image_set_active_layer(image_ID, blurnormal_ID);
+    
+    g_print("shapeRecognise fGaussFactor = %02f\n", fGaussFactor);
+    g_print("shapeRecognise fScalar = %02f\n", fScalar);
+
 
     /**
      * Filter "Gaussian Blur" applied
@@ -741,7 +778,8 @@ void shapeRecognise(gint32 image_ID, gint32 normalmap_ID, gdouble strength)
      * 
      * Add the ".0f" here to signify float in c language.
      */
-    if (plug_in_gauss_connector(image_ID, blurnormal_ID, 20.0f, 20.0f, 0) != 1) return;
+    // if (plug_in_gauss_connector(image_ID, blurnormal_ID, 20.0f, 20.0f, 0) != 1) return;
+    if (plug_in_gauss_connector(image_ID, blurnormal_ID, fGaussFactor, fGaussFactor, 0) != 1) return;
 
     /**
      * Colors ->  Components -> "Channel Mixer" applied
@@ -750,7 +788,10 @@ void shapeRecognise(gint32 image_ID, gint32 normalmap_ID, gdouble strength)
      * Add the "f" here to signify float in c language.
      * Removed 0.0 on first param and changed to 0 because boolean.
      */
-    if (plug_in_colors_channel_mixer_connector(image_ID, blurnormal_ID, 0, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, -200.0f) != 1) return;
+
+    /** Explained on line ~1300 */
+    // if (plug_in_colors_channel_mixer_connector(image_ID, blurnormal_ID, 0, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, -200.0f) != 1) return;
+    if (plug_in_colors_channel_mixer_connector(image_ID, blurnormal_ID, 0, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, -1.0f) != 1) return;
 
     /**
      * Filter "Normalmap" applied
@@ -761,7 +802,8 @@ void shapeRecognise(gint32 image_ID, gint32 normalmap_ID, gdouble strength)
      */
     nmapvals.filter = 0;
     nmapvals.minz = 0.0f;
-    nmapvals.scale = 1.0f;
+    // nmapvals.scale = 1.0f;
+    nmapvals.scale = fScalar;
     nmapvals.wrap = 0;
     nmapvals.height_source = 0;
     nmapvals.alpha = 0;
@@ -781,7 +823,10 @@ void shapeRecognise(gint32 image_ID, gint32 normalmap_ID, gdouble strength)
      * Add the "f" here to signify float in c language.
      * Removed 0.0 on first param and changed to 0 because boolean.
      */
-    if (plug_in_colors_channel_mixer_connector(image_ID, blurnormal_ID, 0, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, -200.0f) != 1) return;
+    
+    /** Explained on line ~1300 */
+    // if (plug_in_colors_channel_mixer_connector(image_ID, blurnormal_ID, 0, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, -200.0f) != 1) return;
+    if (plug_in_colors_channel_mixer_connector(image_ID, blurnormal_ID, 0, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, -1.0f) != 1) return;
 
     gimp_layer_set_mode(blurnormal_ID, 5);
     gimp_layer_set_opacity(blurnormal_ID, strength);
@@ -802,9 +847,15 @@ void shapeRecognise(gint32 image_ID, gint32 normalmap_ID, gdouble strength)
 //	fwrite(str(int(highlights[0])) + " " + str(int(highlights[1])) + " " + str(int(highlights[5] * 100)) + " ")
 //}
 
-void doBaseMap(gint32 image_ID, gint32 diffuse_ID, gfloat Depth, gint32 passes)
+void doBaseMap(gint32 image_ID, gint32 diffuse_ID, gfloat Depth, gint32 passes, gint defAO)
 {
+    gfloat fGausianFactor = defAO * 0.06f;
+    gfloat fScalar = defAO / 50.0f;
     gint32 i = 0 ;
+    
+    g_print("doBaseMap fGausianFactor = %02f\n", fGausianFactor);
+    g_print("doBaseMap fScalar = %02f\n", fScalar);
+    
     for (i = 0; i < passes; i++)
     {
         /** Copy active layer. */
@@ -822,7 +873,8 @@ void doBaseMap(gint32 image_ID, gint32 diffuse_ID, gfloat Depth, gint32 passes)
          * 
          * Add the ".0f" here to signify float in c language.
          */
-        if (plug_in_gauss_connector(image_ID, newlayer_ID, ok * 3.0f, ok * 3.0f, 0) != 1) return;
+        // if (plug_in_gauss_connector(image_ID, newlayer_ID, ok * 3.0f, ok * 3.0f, 0) != 1) return;
+        if (plug_in_gauss_connector(image_ID, newlayer_ID, ok * fGausianFactor, ok * fGausianFactor, 0) != 1) return;
 
         /**
          * Filter "Normalmap" applied
@@ -868,7 +920,8 @@ void doBaseMap(gint32 image_ID, gint32 diffuse_ID, gfloat Depth, gint32 passes)
              */
             nmapvals.filter = 0;
             nmapvals.minz = 0.0f;
-            nmapvals.scale = 1.0f;
+            // nmapvals.scale = 1.0f;
+            nmapvals.scale = fScalar;
             nmapvals.wrap = 0;
             nmapvals.height_source = 0;
             nmapvals.alpha = 0;
@@ -940,6 +993,7 @@ gint32 render(gint32 img_ID, PlugInVals *vals)
     GString *file_name_temp = NULL;
     gint32 drawable_ID = 0;
     gint32 nResult = 0;
+    gfloat fScalar = 0.0f;
 
     
 /*******************************************************************************
@@ -1000,6 +1054,7 @@ gint32 render(gint32 img_ID, PlugInVals *vals)
     }
     
     if (vals->Noise) {
+        gfloat fGausianNoiseFactor = vals->ao * 0.0040f;
         gint32 noiselayer_ID = gimp_layer_copy (drawable_ID);
         /**
          * Old code:
@@ -1018,7 +1073,8 @@ gint32 render(gint32 img_ID, PlugInVals *vals)
          * Add the "f" here to signify float in c language.
          */
         gtk_label_set_text(GTK_LABEL(progress_label), "Noise");
-        if (plug_in_rgb_noise_connector(image_ID, noiselayer_ID, 1, 1, 0.20f, 0.20f, 0.20f, 0.0f) != 1) return 0;
+        // if (plug_in_rgb_noise_connector(image_ID, noiselayer_ID, 1, 1, 0.20f, 0.20f, 0.20f, 0.0f) != 1) return 0;
+        if (plug_in_rgb_noise_connector(image_ID, noiselayer_ID, 1, 1, fGausianNoiseFactor, fGausianNoiseFactor, fGausianNoiseFactor, 0.0f) != 1) return 0;
         gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR(progress), 0.04);
 
         /**
@@ -1117,7 +1173,7 @@ gint32 render(gint32 img_ID, PlugInVals *vals)
     wsize = (gfloat)gimp_image_width(image_ID);
     hsize = (gfloat)gimp_image_width(image_ID);
     gtk_label_set_text(GTK_LABEL(progress_label), "Smoothing");
-    blur(image_ID, diffuse_ID, wsize, hsize, vals->LargeDetails, 0);
+    blur(image_ID, diffuse_ID, wsize, hsize, vals->LargeDetails, 0, vals->ao);
     gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR(progress), 0.15);
 
     file_name_temp = getFilename(file_name, "_h");
@@ -1169,7 +1225,7 @@ gint32 render(gint32 img_ID, PlugInVals *vals)
      */
 
     gtk_label_set_text(GTK_LABEL(progress_label), "Base Mapping");
-    doBaseMap(image_ID, diffuse_ID, vals->Depth, vals->LargeDetails);
+    doBaseMap(image_ID, diffuse_ID, vals->Depth, vals->LargeDetails, vals->ao);
     gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR(progress), 0.35);
     normalmap_ID = gimp_image_get_active_layer(image_ID);
 
@@ -1181,7 +1237,7 @@ gint32 render(gint32 img_ID, PlugInVals *vals)
     gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR(progress), 0.40);
 
     file_name_temp = getFilename(file_name, "_sn");
-    shapeRecognise(image_ID, normalmap_ID, vals->ShapeRecog);
+    shapeRecognise(image_ID, normalmap_ID, vals->ShapeRecog, vals->ao);
     if(vals->smoothstep)
     {
         normalmap_ID = gimp_image_get_active_layer(image_ID);
@@ -1235,12 +1291,12 @@ gint32 render(gint32 img_ID, PlugInVals *vals)
      * Standard plug-in. Source code ships with GIMP.
      */
     gtk_label_set_text(GTK_LABEL(progress_label), "Smoothing");
-	if (plug_in_blur_connector(image_ID, normalmap_ID) != 1) return 0;
+    if (plug_in_blur_connector(image_ID, normalmap_ID) != 1) return 0;
     gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR(progress), 0.75);
 
     file_name_temp = getFilename(file_name, "_mn");
     set_progress_label_as_file(file_name_temp, "_mn");
-	saveLastOperation(image_ID, file_name_temp);
+    saveLastOperation(image_ID, file_name_temp);
     g_string_free(file_name_temp, TRUE);
     file_name_temp = NULL;
     gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR(progress), 0.78);
@@ -1261,9 +1317,11 @@ gint32 render(gint32 img_ID, PlugInVals *vals)
      * original values:
      * plug_in_normalmap_derby(image, drawable, 0, 0.0, 1.0, 0, 0, 0, 8, 0, 0, 0, 0, 0.0, drawable)
      */
+    fScalar = vals->ao / 50.0f;
     nmapvals.filter = 0;
     nmapvals.minz = 0.0f;
-    nmapvals.scale = 1.0f;
+    // nmapvals.scale = 1.0f;
+    nmapvals.scale = fScalar;
     nmapvals.wrap = 0;
     nmapvals.height_source = 0;
     nmapvals.alpha = 0;
@@ -1297,7 +1355,35 @@ gint32 render(gint32 img_ID, PlugInVals *vals)
      * Removed 0.0 on first param and changed to 0 because boolean.
      */
     gtk_label_set_text(GTK_LABEL(progress_label), "Mixing Colors");
-    if (plug_in_colors_channel_mixer_connector(image_ID, drawable_ID, 0, -200.0f, 0.0f, 0.0f, 0.0f, -200.0f, 0.0f, 0.0f, 0.0f, 1.0f) != 1) return 0;
+    /**
+     * In Gimp the Channel Mixer is found in the menu system at:
+     * 
+     * Colors->Components->Channel Mixer
+     * 
+     * Parameters for colors channel mixer:                                             SETTINGS  Corrected
+     * { GIMP_PDB_INT32,    "run-mode",   "Interactive, non-interactive" },
+     * { GIMP_PDB_IMAGE,    "image",      "Input image (unused)" },
+     * { GIMP_PDB_DRAWABLE, "drawable",   "Input drawable" },
+     * { GIMP_PDB_INT32,    "monochrome", "Monochrome (TRUE or FALSE)" },                FALSE    FALSE
+     * { GIMP_PDB_FLOAT,    "rr-gain",    "Set the red gain for the red channel" },     -200.0f   -1.0f
+     * { GIMP_PDB_FLOAT,    "rg-gain",    "Set the green gain for the red channel" },    0.0f      0.0f
+     * { GIMP_PDB_FLOAT,    "rb-gain",    "Set the blue gain for the red channel" },     0.0f      0.0f
+     * { GIMP_PDB_FLOAT,    "gr-gain",    "Set the red gain for the green channel" },    0.0f      0.0f
+     * { GIMP_PDB_FLOAT,    "gg-gain",    "Set the green gain for the green channel" }, -200.0f   -1.0f
+     * { GIMP_PDB_FLOAT,    "gb-gain",    "Set the blue gain for the green channel" },   0.0f      0.0f
+     * { GIMP_PDB_FLOAT,    "br-gain",    "Set the red gain for the blue channel" },     0.0f      0.0f
+     * { GIMP_PDB_FLOAT,    "bg-gain",    "Set the green gain for the blue channel" },   0.0f      0.0f
+     * { GIMP_PDB_FLOAT,    "bb-gain",    "Set the blue gain for the blue channel" }     1.0f      1.0f
+     * 
+     * view as matrix:
+     * (plug-in-colors-channel-mixer RUN-NONINTERACTIVE image layer FALSE
+     *                         -1  0  0
+     *                          0 -1  0
+     *                          0  0  1 )
+     * 
+     */
+    // if (plug_in_colors_channel_mixer_connector(image_ID, drawable_ID, 0, -200.0f, 0.0f, 0.0f, 0.0f, -200.0f, 0.0f, 0.0f, 0.0f, 1.0f) != 1) return 0;
+    if (plug_in_colors_channel_mixer_connector(image_ID, drawable_ID, 0, -1.0f, 0.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f, 0.0f, 1.0f) != 1) return 0;
     gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR(progress), 0.87);
 
     gimp_desaturate(drawable_ID);
@@ -1325,7 +1411,7 @@ gint32 render(gint32 img_ID, PlugInVals *vals)
         gtk_label_set_text(GTK_LABEL(progress_label), "Specular Smoothing");
     }
 
-    nResult = specularDo(image_ID, file_name, vals->defSpecular, vals->EdgeSpecular);
+    nResult = specularDo(image_ID, file_name, vals->defSpecular, vals->ao, vals->EdgeSpecular);
 
     if(vals->EdgeSpecular)
     {

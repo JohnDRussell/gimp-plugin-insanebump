@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+F#! /usr/bin/env python
 
 from gimpfu import *
 import commands

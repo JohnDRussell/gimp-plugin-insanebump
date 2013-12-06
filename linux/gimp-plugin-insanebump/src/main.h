@@ -28,7 +28,11 @@
 #ifndef __MAIN_H__
 #define __MAIN_H__
 
-#define NAME_AND_VERSION "Insane Bump 1.0.4"
+/**
+ * Changed from 1.0.4 to 1.0.5 on 12/4/2013 because Channel Mixer
+ * values were corrected for -1.0 to 1.0
+ */
+#define NAME_AND_VERSION "Insane Bump 1.0.5"
 
 typedef struct
 {

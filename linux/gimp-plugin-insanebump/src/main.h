@@ -31,30 +31,107 @@
 /**
  * Changed from 1.0.4 to 1.0.5 on 12/4/2013 because Channel Mixer
  * values were corrected for -1.0 to 1.0
+ * Changed from 1.0.5 to 1.0.6 on 12/7/2013 because Many Issues fixed.
  */
-#define NAME_AND_VERSION "Insane Bump 1.0.5"
+#define NAME_AND_VERSION "Insane Bump 1.0.6"
 
+/**
+ * Structure to house the plugin values.
+ */
 typedef struct
 {
+    /**
+     * Remove Lighting toggle TRUE (1) or FALSE (0)
+     */
     gint32 RemoveLighting;
+
+    /**
+     * Upscale(HD) toggle TRUE (1) or FALSE (0)
+     */
     gint32 Resizie;
+
+    /**
+     * Tile toggle TRUE (1) or FALSE (0)
+     */
     gint32 Tile;
+
+    /**
+     * New Width integer spinner
+     */
     gint32 newWidth;
+
+    /**
+     * Edge Specular Map toggle TRUE (1) or FALSE (0)
+     */
     gint32 EdgeSpecular;
+
+    /**
+     * Specular Definition integer spinner
+     */
     gint32 defSpecular;
+
+    /**
+     * Depth(+/-) integer spinner
+     */
     gfloat Depth;
+
+    /**
+     * Large Detail Size integer spinner
+     */
     gint32 LargeDetails;
+
+    /**
+     * Medium Detail Size integer spinner
+     */
     gint32 MediumDetails;
+
+    /**
+     * Small Detail Size integer spinner
+     */
     gint32 SmallDetails;
+
+    /**
+     * Shape Recognition(%) integer spinner
+     */
     gint32 ShapeRecog;
+
+    /**
+     * Smooth Step toggle TRUE (1) or FALSE (0)
+     */
     gint32 smoothstep;
+
+    /**
+     * Noise toggle TRUE (1) or FALSE (0)
+     */
     gint32 Noise;
+
+    /**
+     * Invert Height Map toggle TRUE (1) or FALSE (0)
+     */
     gint32 invh;
+
+    /**
+     * AO integer spinner
+     */
     gint32 ao;
+
+    /**
+     * The main image Identifier.  This value is set at the beginning of
+     * the dialog creation.
+     */
     gint32 image_ID;
+
+    /**
+     * The Preview toggle TRUE (1) or FALSE (0).  Used to determine if the
+     * user has activated the preview pane or not.  If not, all preview drawing
+     * is turned off.
+     */
     gint32 prev;
 } PlugInVals;
 
+/*  Global Variables  */
+extern GtkWidget *progress;
+extern GtkWidget *progress_label;
 
 /*  Default values  */
 

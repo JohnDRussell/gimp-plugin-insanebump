@@ -32,11 +32,7 @@
 #include "InsaneBump.h"
 #include "PluginConnectors.h"
 
-/** Preview window in dialog box is not enabled in this first release. */
-// extern GtkWidget *preview;
-
-extern GtkWidget *progress;
-extern GtkWidget *progress_label;
+/** Preview 5 windows in dialog box is enabled in this fourth release. */
 
 /**
  * Builds a file name from the suffix.
@@ -66,13 +62,13 @@ GString *getFilename(const gchar *filename, const gchar *suffix)
     char *szPtr = strchr((char *)szStr, '.');
     int nLocate = szPtr - szStr;
     g_string_insert(newfilename, nLocate, suffix);
-	return newfilename;
+    return newfilename;
 }
 
 void saveLastOperation(gint32 image_ID, const GString *filename)
 {
-	gint32 layer_ID = gimp_image_get_active_layer(image_ID);
-	gimp_file_save(GIMP_RUN_NONINTERACTIVE, image_ID, layer_ID, filename->str, filename->str);
+    gint32 layer_ID = gimp_image_get_active_layer(image_ID);
+    gimp_file_save(GIMP_RUN_NONINTERACTIVE, image_ID, layer_ID, filename->str, filename->str);
 }
 
 void set_progress_label_as_file(GString *file_name_given, const gchar *szSuffix)
@@ -105,7 +101,6 @@ void set_progress_label_as_file(GString *file_name_given, const gchar *szSuffix)
 gint32 specularEdgeWorker(gint32 image_ID, gint defin, gint defAO, gint32 bShowProgress)
 {
     gfloat secondRadius = defAO * 0.16f;
-    g_print("specularEdgeWorker secondRadius = %02f\n", secondRadius);
     /** Get the active layer. */
     gint32 drawable_ID = gimp_image_get_active_layer(image_ID);
     /** Copy the active layer. */
@@ -114,8 +109,6 @@ gint32 specularEdgeWorker(gint32 image_ID, gint defin, gint defAO, gint32 bShowP
         gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR(progress), 0.92);
     }
     
-    g_print("specularEdgeWorker secondRadius = %02f drawable_ID=%d, newlayer_ID=%d\n", secondRadius, drawable_ID, newlayer_ID);
-
     /** Add the copied layer to the image file. */
     gimp_image_add_layer(image_ID, newlayer_ID, -1);
     /** Set the copied layer to active. */
@@ -278,18 +271,16 @@ gint32 specularEdgeOriginal(gint32 image_ID, const gchar *file_name, gint defin)
 
 gint32 specularSmoothWorker(gint32 image_ID, gint defin, gint defAO, gint32 bShowProgress)
 {
+    gfloat firstRadius = defAO * 0.16;
     /** Get active layer. */
     gint32 drawable_ID = gimp_image_get_active_layer(image_ID);
     /** Copy active layer. */
     gint32 newlayer_ID = gimp_layer_copy (drawable_ID);
-    gfloat firstRadius = defAO * 0.16;
     /** Add the copied layer to the image file. */
     gimp_image_add_layer(image_ID, newlayer_ID, -1);
     /** Set the copied layer to active. */
     gimp_image_set_active_layer(image_ID, newlayer_ID);
 
-    g_print("specularSmoothWorker firstRadius = %02f\n", firstRadius);
-    
     /**
      * Desaturate the active layer.
      *
@@ -485,10 +476,10 @@ void removeGivenLayerFromImage(gint32 image_ID, gint32 layer_ID)
 
 void removeShading(gint32 image_ID)
 {
-	gint32 drawable_ID = gimp_image_get_active_layer(image_ID);
-	gint32 newlayer_ID = gimp_layer_copy (drawable_ID);
-	gimp_image_add_layer(image_ID, newlayer_ID, -1);
-	gimp_image_set_active_layer(image_ID, newlayer_ID);
+    gint32 drawable_ID = gimp_image_get_active_layer(image_ID);
+    gint32 newlayer_ID = gimp_layer_copy (drawable_ID);
+    gimp_image_add_layer(image_ID, newlayer_ID, -1);
+    gimp_image_set_active_layer(image_ID, newlayer_ID);
 
     /**
      * Filter "Gaussian Blur" applied
@@ -496,19 +487,19 @@ void removeShading(gint32 image_ID)
      * 
      * Add the "f" here to signify float in c language.
      */
-	if (plug_in_gauss_connector(image_ID, newlayer_ID, 20.0f, 20.0f, 0) != 1) return;
+    if (plug_in_gauss_connector(image_ID, newlayer_ID, 20.0f, 20.0f, 0) != 1) return;
 
     /**
      * Colors Menu->Invert
      * Standard plug-in. Source code ships with GIMP.
      */
-	if (plug_in_vinvert_connector(image_ID, newlayer_ID) != 1) return;
+    if (plug_in_vinvert_connector(image_ID, newlayer_ID) != 1) return;
 
-        /** 5 is GIMP_OVERLAY_MODE replaced. */
-	gimp_layer_set_mode(newlayer_ID, GIMP_OVERLAY_MODE);
-        
-        /** This command is causing a problem in preview mode. */
-	gimp_image_merge_visible_layers(image_ID, 0);
+    /** 5 is GIMP_OVERLAY_MODE replaced. */
+    gimp_layer_set_mode(newlayer_ID, GIMP_OVERLAY_MODE);
+
+    /** This command is causing a problem in preview mode. */
+    gimp_image_merge_visible_layers(image_ID, 0);
 }
 
 void removeShadingPreview(gint32 image_ID, gint32 noise_val)
@@ -613,10 +604,10 @@ void blur(gint32 image_ID, gint32 diffuse_ID, gfloat width, gfloat height, gint3
     gint32 drawable_ID = 0 ;
     gint32 i = 0 ;
 
+    gfloat fMultiplier = defAO / 1000.0f;
     /** Copy current layer. */
     /** LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL */
     gint32 desatdiffuse_ID = gimp_layer_copy (diffuse_ID);
-    gfloat fMultiplier = defAO / 1000.0f;
     /** Add the new layer to the image. */
     gimp_image_add_layer(image_ID, desatdiffuse_ID, -1);
     /** Set the new layer as the active layer. */
@@ -626,8 +617,6 @@ void blur(gint32 image_ID, gint32 diffuse_ID, gfloat width, gfloat height, gint3
         gimp_desaturate(desatdiffuse_ID);
     }
     
-    g_print("blur fMultiplier = %02f\n", fMultiplier);
-
     /** This gets repeated Large Details times!!! A new layer each time. */
     for (i = 0; i < passes; i++)
     {
@@ -667,8 +656,6 @@ void blur(gint32 image_ID, gint32 diffuse_ID, gfloat width, gfloat height, gint3
     {
         gfloat fScalar = defAO / 50.0f;
         
-        g_print("blur fScalar = %02f\n", fScalar);
-
         /**
          * Filter "Normalmap" applied
          * Non-Standard plug-in. Source code included.
@@ -758,20 +745,16 @@ void sharpen(gint32 image_ID, gint32 diffuse, gfloat depth, gint32 filterSize, g
 
 void shapeRecognise(gint32 image_ID, gint32 normalmap_ID, gdouble strength, gint defAO)
 {
+    gfloat fGaussFactor = defAO * 0.40f;
+    gfloat fScalar = defAO / 50.0f;
     /** Copy given layer. */
     /** LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL */
     gint32 blurnormal_ID = gimp_layer_copy(normalmap_ID);
-    gfloat fGaussFactor = defAO * 0.40f;
-    gfloat fScalar = defAO / 50.0f;
     /** Add new layer to image. */
     gimp_image_add_layer(image_ID, blurnormal_ID, -1);
     /** Set new layer as the active layer. */
     gimp_image_set_active_layer(image_ID, blurnormal_ID);
     
-    g_print("shapeRecognise fGaussFactor = %02f\n", fGaussFactor);
-    g_print("shapeRecognise fScalar = %02f\n", fScalar);
-
-
     /**
      * Filter "Gaussian Blur" applied
      * Standard plug-in. Source code ships with GIMP.
@@ -852,9 +835,6 @@ void doBaseMap(gint32 image_ID, gint32 diffuse_ID, gfloat Depth, gint32 passes, 
     gfloat fGausianFactor = defAO * 0.06f;
     gfloat fScalar = defAO / 50.0f;
     gint32 i = 0 ;
-    
-    g_print("doBaseMap fGausianFactor = %02f\n", fGausianFactor);
-    g_print("doBaseMap fScalar = %02f\n", fScalar);
     
     for (i = 0; i < passes; i++)
     {

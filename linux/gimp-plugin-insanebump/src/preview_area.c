@@ -46,12 +46,12 @@
 
 
 /*  Local function prototypes  */
-void removeAllLayersExceptMain(void);
 
 
 /*  Global Variables  */
 gchar _active = 'x';
 PreviewDraws pDrawables;
+GtkWidget *g_gwNormalsFrame = NULL;
 
 /*  Local variables  */
 static GtkWidget *btn_n = NULL;
@@ -115,6 +115,10 @@ static void preview_diffuse_only(gint32 image_ID) {
     gint32 noiselayer_ID = -1;
     gint32 drawable_ID = -1;
     gint32 drawableDiffuse_ID = -1;
+    
+    gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR(progress), 0.0);
+    gtk_label_set_text(GTK_LABEL(progress_label), "Begin");
+
     drawableBeginActiveLayer = gimp_image_get_active_layer(image_ID);
     drawable_ID = gimp_layer_copy (drawableBeginActiveLayer);
     gimp_image_add_layer(image_ID, drawable_ID, -1);
@@ -136,6 +140,8 @@ static void preview_diffuse_only(gint32 image_ID) {
 
         gimp_image_add_layer(image_ID, noiselayer_ID, -1);
         gimp_image_set_active_layer(image_ID, noiselayer_ID);
+        gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR(progress), 0.03);
+        gtk_label_set_text(GTK_LABEL(progress_label), "Noise");
 
         /**
          * Filter "RGB Noise" applied
@@ -144,17 +150,21 @@ static void preview_diffuse_only(gint32 image_ID) {
          * Add the "f" here to signify float in c language.
          */
         if (plug_in_rgb_noise_connector(image_ID, noiselayer_ID, 1, 1, 0.20f, 0.20f, 0.20f, 0.0f) != 1) return;
-
+        gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR(progress), 0.04);
+        
         gimp_layer_set_mode(noiselayer_ID, GIMP_VALUE_MODE);
         gimp_image_merge_down(image_ID, noiselayer_ID, 0);
         
         gtk_label_set_text(GTK_LABEL(gwNormalLabel), "Noise affects every redraw!");
     } else {
         gtk_label_set_text(GTK_LABEL(gwNormalLabel), "");
+        gtk_label_set_text(GTK_LABEL(progress_label), "Noise added");
+        gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR(progress), 0.04);
     }
          
     if(local_vals.RemoveLighting)
     {
+        gtk_label_set_text(GTK_LABEL(progress_label), "Remove Shading");
         removeShadingPreview(image_ID, local_vals.Noise);
         /**
          * See notes inside of removeShadingPreview
@@ -171,22 +181,31 @@ static void preview_diffuse_only(gint32 image_ID) {
          * Delete noiselayer_ID?  I thought it was merged!
          * No, I was right noiselayer_ID is already gone!
          */
+        gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR(progress), 0.05);
+    } else {
+        gtk_label_set_text(GTK_LABEL(progress_label), "Stretch");
+        gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR(progress), 0.05);
     }
 		
     drawableDiffuse_ID = gimp_image_get_active_layer(image_ID);
     gimp_levels_stretch(drawableDiffuse_ID);
     if(local_vals.Tile)
     {
+        gtk_label_set_text(GTK_LABEL(progress_label), "Making Seamless");
         /**
          * Filter "Tile Seamless" applied
          * Standard plug-in. Source code ships with GIMP.
          */
         if (plug_in_make_seamless_connector(image_ID, drawableDiffuse_ID) != 1) return;
+        gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR(progress), 0.07);
+    } else {
+        gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR(progress), 0.07);
     }
     
     /** Here I should un hide previously hidden layer, make visible. */
     
     pDrawables.drawable_d = gimp_drawable_get(drawableDiffuse_ID);
+    gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR(progress), 0.1);
 }
 
 static void preview_alt_normal(gint32 image_ID) {
@@ -207,21 +226,29 @@ static void preview_alt_normal(gint32 image_ID) {
     /** Set new layer as active. */
     gimp_image_set_active_layer(image_ID, diffuse_ID);
     /** Here I should hide previous active layer, make not visible. */
-    
+    gtk_label_set_text(GTK_LABEL(progress_label), "Smoothing");
+
     /**
      * Since copied, don't need this here.
      * blur seems to not create an extra layer.
      */
     blur(image_ID, diffuse_ID, wsize, hsize, local_vals.LargeDetails, 0, local_vals.ao);
-
+    gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR(progress), 0.15);
+    
     normalmap_ID = gimp_image_get_active_layer(image_ID);
     if(local_vals.smoothstep)
     {
+        gtk_label_set_text(GTK_LABEL(progress_label), "Smoothing");
         /**
          * Filter "Blur" applied
          * Standard plug-in. Source code ships with GIMP.
          */
         if (plug_in_blur_connector(image_ID, normalmap_ID) != 1) return;
+        gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR(progress), 0.20);
+    }
+    else
+    {
+        gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR(progress), 0.20);        
     }
 
     if(local_vals.invh)
@@ -231,15 +258,24 @@ static void preview_alt_normal(gint32 image_ID) {
          * Standard plug-in. Source code ships with GIMP.
          */
         if (plug_in_vinvert_connector(image_ID, normalmap_ID) != 1) return;
+        gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR(progress), 0.25);
+    }
+    else
+    {
+        gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR(progress), 0.25);
     }
     
     /** Here is _p Displacement drawable. */
     pDrawables.drawable_p = gimp_drawable_get(normalmap_ID);
+    gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR(progress), 0.30);
 
     /** Extra layer here. */
     /** LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL */
+    gtk_label_set_text(GTK_LABEL(progress_label), "Base Mapping");
     doBaseMap(image_ID, diffuse_ID, local_vals.Depth, local_vals.LargeDetails, local_vals.ao);
+    gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR(progress), 0.35);
     normalmap_ID = gimp_image_get_active_layer(image_ID);
+    gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR(progress), 0.40);
     
     /** Here is _ln low normal. l l l l l l l l l l l l l l l l */
     if (gcNeedNormal == 'l') {
@@ -253,23 +289,35 @@ static void preview_alt_normal(gint32 image_ID) {
     {
         normalmap_ID = gimp_image_get_active_layer(image_ID);
 
+        gtk_label_set_text(GTK_LABEL(progress_label), "Smoothing");
         /**
          * Filter "Blur" applied
          * Standard plug-in. Source code ships with GIMP.
          */
         if (plug_in_blur_connector(image_ID, normalmap_ID) != 1) return;
+        gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR(progress), 0.45);
+    }
+    else
+    {
+        gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR(progress), 0.45);
     }
     
     /** Here is _sn super normal. s s s s s s s s s s s s s s s s */
     if (gcNeedNormal == 's') {
         pDrawables.drawable_n = gimp_drawable_get(normalmap_ID);
     }
+    gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR(progress), 0.50);
+    gtk_label_set_text(GTK_LABEL(progress_label), "Sharpen");
 
     /** Creates an extra layer. */
     /** LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL */
     sharpen(image_ID, diffuse_ID, local_vals.Depth, 0, local_vals.SmallDetails);
+    gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR(progress), 0.55);
     normalmap_ID = gimp_image_get_active_layer(image_ID);
 
+    gtk_label_set_text(GTK_LABEL(progress_label), "Sharpen more");
+    gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR(progress), 0.65);
+    
     /**
     * Filter Enhance "Sharpen" applied
     * Standard plug-in. Source code ships with GIMP.
@@ -281,21 +329,26 @@ static void preview_alt_normal(gint32 image_ID) {
         pDrawables.drawable_n = gimp_drawable_get(normalmap_ID);
     }
 
+    gtk_label_set_text(GTK_LABEL(progress_label), "Sharpen again");
     /** Creates an extra layer. */
     /** LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL */
     sharpen(image_ID, diffuse_ID, local_vals.Depth, 6, local_vals.MediumDetails);
+    gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR(progress), 0.70);
     normalmap_ID = gimp_image_get_active_layer(image_ID);
     
+    gtk_label_set_text(GTK_LABEL(progress_label), "Smoothing");
     /**
      * Filter "Blur" applied
      * Standard plug-in. Source code ships with GIMP.
      */
     if (plug_in_blur_connector(image_ID, normalmap_ID) != 1) return;
+    gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR(progress), 0.75);
     
     /** Here is _mn medium normal m m m m m m m m m m m m m m m m */
     if (gcNeedNormal == 'm') {
         pDrawables.drawable_n = gimp_drawable_get(normalmap_ID);
     }
+    gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR(progress), 0.78);
 
     gimp_drawable_set_visible(diffuse_ID, 0);
     
@@ -358,16 +411,21 @@ static void preview_normal_only(gint32 image_ID) {
     nmapvals.swapRGB = 0;
     nmapvals.contrast = 0.0f;
     nmapvals.alphamap_id = drawableNormal_ID;
+    gtk_label_set_text(GTK_LABEL(progress_label), "Normal map");
     normalmap(drawableNormal_ID, 0);
+    gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR(progress), 0.80);
 
     if (gcNeedNormal == 'n') {
         pDrawables.drawable_n = gimp_drawable_get(drawableNormal_ID);
     }
+    gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR(progress), 0.85);
 }
 
 static void preview_ambient_occlusion_only(gint32 image_ID) {
     gint32 drawable_ID = -1;
     gint32 drawableAO_ID = -1;
+    
+    gtk_label_set_text(GTK_LABEL(progress_label), "Mixing Colors");
     // preview_diffuse_only(image_ID);
     preview_normal_only(image_ID);
     // if (preview_normal_only(image_ID) != NULL) return NULL;
@@ -391,27 +449,25 @@ static void preview_ambient_occlusion_only(gint32 image_ID) {
     /** Explained on line ~1300 of InsaneBump.c */
     // if (plug_in_colors_channel_mixer_connector(image_ID, drawableAO_ID, 0, -200.0f, 0.0f, 0.0f, 0.0f, -200.0f, 0.0f, 0.0f, 0.0f, 1.0f) != 1) return;
     if (plug_in_colors_channel_mixer_connector(image_ID, drawableAO_ID, 0, -1.0f, 0.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f, 0.0f, 1.0f) != 1) return;
-
-    g_print("ao channel complete\n");
+    gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR(progress), 0.87);
+    
     gimp_desaturate(drawableAO_ID);
-    g_print("ao desat complete\n");
     gimp_levels_stretch(drawableAO_ID);
-    g_print("ao levels complete\n");
     
     pDrawables.drawable_ao = gimp_drawable_get(drawableAO_ID);
-    g_print("ao drawable complete\n");
+    gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR(progress), 0.90);
 }
 
 static void preview_specular_only(gint32 image_ID) {
     gint32 drawableSpecular_ID = -1;
     gint32 nResult = 0;
-
+    
     preview_ambient_occlusion_only(image_ID);
 
     if(local_vals.EdgeSpecular)
     {
+        gtk_label_set_text(GTK_LABEL(progress_label), "Specular Edging");
         drawableSpecular_ID = specularEdgeWorker(image_ID, local_vals.defSpecular, local_vals.ao, FALSE);
-        g_print("specularEdgeWorker complete\n");
         if (drawableSpecular_ID == -1) {
             gimp_message("Specular Edge Worker returned -1!");
             nResult = 0;
@@ -419,6 +475,7 @@ static void preview_specular_only(gint32 image_ID) {
     }
     else
     {
+        gtk_label_set_text(GTK_LABEL(progress_label), "Specular Smoothing");
         drawableSpecular_ID = specularSmoothWorker(image_ID, local_vals.defSpecular, local_vals.ao, FALSE);
         if (drawableSpecular_ID == -1) {
             gimp_message("Specular Smooth Worker returned -1!");
@@ -426,6 +483,9 @@ static void preview_specular_only(gint32 image_ID) {
         } else nResult = 1;
     }
     
+    gtk_label_set_text(GTK_LABEL(progress_label), "Idle...");
+    gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR(progress), 1.0);
+
     if (nResult == 1) {
         pDrawables.drawable_s = gimp_drawable_get(drawableSpecular_ID);
     } else {
@@ -465,6 +525,7 @@ void preview_redraw(void)
     if (is_3D_preview_active()) return;
     if (local_vals.prev == 1)
     {
+        // gimp_progress_init("Creating InsaneBump...");
         _active = 't'; // for start
         if (pDrawables.drawable_d != NULL) {
             gimp_drawable_detach(pDrawables.drawable_d);
@@ -525,6 +586,7 @@ void preview_redraw(void)
         }
 
         removeAllLayersExceptMain();
+        preview_progress_reset = 0 ;
     }
 }
 
@@ -554,6 +616,100 @@ void preview_clicked(GtkWidget *widget, gpointer data)
     }
 }
 
+/**
+ * Set all the usable values to the startup default
+ * values.  Take care here to preserve the image ID.  The copyPlugInVals
+ * function strips out the image ID.
+ * 
+ * @param widget - not used but required by gtk signal
+ * @param data   - not used but required by gtk signal
+ */
+void restore_defaults_clicked(GtkWidget *widget, gpointer data)
+{
+    PlugInVals pivTemp;
+    if (!dialog_is_init) return;
+
+    copyPlugInVals(&local_vals, &pivTemp);
+    copyPlugInVals(&default_vals, &local_vals);
+    /** Restore Button Toggles. */
+    if (pivTemp.RemoveLighting != local_vals.RemoveLighting) {
+        /** Toggle the Remove Lighting button. */
+        gtk_button_clicked(GTK_BUTTON(g_gwRemoveLtgBtn));
+        remlightbtn_clicked(g_gwRemoveLtgBtn, NULL);
+    }
+    if (pivTemp.Resizie != local_vals.Resizie) {
+        /** Toggle the Upscale(HD) button. */
+        gtk_button_clicked(GTK_BUTTON(g_gwUpscaleBtn));
+        upscale_HD_clicked(g_gwUpscaleBtn, NULL);
+    }
+    if (pivTemp.Tile != local_vals.Tile) {
+        /** Toggle the Tile button. */
+        gtk_button_clicked(GTK_BUTTON(g_gwTileBtn));
+        tile_clicked(g_gwTileBtn, NULL);
+    }
+    if (pivTemp.EdgeSpecular != local_vals.EdgeSpecular) {
+        /** Toggle the Edge Specular Map button. */
+        gtk_button_clicked(GTK_BUTTON(g_gwEdgeBtn));
+        edge_enhancing_specular_clicked(g_gwEdgeBtn, NULL);
+    }
+    if (pivTemp.smoothstep != local_vals.smoothstep) {
+        /** Toggle the Smooth Step button. */
+        gtk_button_clicked(GTK_BUTTON(g_gwSmoothBtn));
+        smooth_step_clicked(g_gwSmoothBtn, NULL);
+    }
+    if (pivTemp.Noise != local_vals.Noise) {
+        /** Toggle the Noise button. */
+        gtk_button_clicked(GTK_BUTTON(g_gwNoiseBtn));
+        noise_clicked(g_gwNoiseBtn, NULL);
+    }
+    if (pivTemp.invh != local_vals.invh) {
+        /** Toggle the Invert Height Map button. */
+        gtk_button_clicked(GTK_BUTTON(g_gwInvertBtn));
+        invert_height_map_clicked(g_gwInvertBtn, NULL);
+    }
+    /** Restore spinner edit controls. */
+    if (pivTemp.Depth != local_vals.Depth) {
+        GtkAdjustment * gaTemp = gtk_spin_button_get_adjustment(GTK_SPIN_BUTTON(g_gwDepthSpin));
+        gtk_adjustment_set_value(GTK_ADJUSTMENT(gaTemp), (gdouble)local_vals.Depth);
+    }
+    if (pivTemp.LargeDetails != local_vals.LargeDetails) {
+        GtkAdjustment * gaTemp = gtk_spin_button_get_adjustment(GTK_SPIN_BUTTON(g_gwLargeDSpin));
+        gtk_adjustment_set_value(GTK_ADJUSTMENT(gaTemp), (gdouble)local_vals.LargeDetails);
+    }
+    if (pivTemp.MediumDetails != local_vals.MediumDetails) {
+        GtkAdjustment * gaTemp = gtk_spin_button_get_adjustment(GTK_SPIN_BUTTON(g_gwMediumDSpin));
+        gtk_adjustment_set_value(GTK_ADJUSTMENT(gaTemp), (gdouble)local_vals.MediumDetails);
+    }
+    if (pivTemp.SmallDetails != local_vals.SmallDetails) {
+        GtkAdjustment * gaTemp = gtk_spin_button_get_adjustment(GTK_SPIN_BUTTON(g_gwSmallDSpin));
+        gtk_adjustment_set_value(GTK_ADJUSTMENT(gaTemp), (gdouble)local_vals.SmallDetails);
+    }
+    if (pivTemp.ShapeRecog != local_vals.ShapeRecog) {
+        GtkAdjustment * gaTemp = gtk_spin_button_get_adjustment(GTK_SPIN_BUTTON(g_gwShapeSpin));
+        gtk_adjustment_set_value(GTK_ADJUSTMENT(gaTemp), (gdouble)local_vals.ShapeRecog);
+    }
+    if (pivTemp.ao != local_vals.ao) {
+        GtkAdjustment * gaTemp = gtk_spin_button_get_adjustment(GTK_SPIN_BUTTON(g_gwAOSpin));
+        gtk_adjustment_set_value(GTK_ADJUSTMENT(gaTemp), (gdouble)local_vals.ao);
+    }
+    if (pivTemp.defSpecular != local_vals.defSpecular) {
+        GtkAdjustment * gaTemp = gtk_spin_button_get_adjustment(GTK_SPIN_BUTTON(g_gwSpecDefSpin));
+        gtk_adjustment_set_value(GTK_ADJUSTMENT(gaTemp), (gdouble)local_vals.defSpecular);
+    }
+    if (pivTemp.newWidth != local_vals.newWidth) {
+        GtkAdjustment * gaTemp = gtk_spin_button_get_adjustment(GTK_SPIN_BUTTON(g_gwWidthSpin));
+        gtk_adjustment_set_value(GTK_ADJUSTMENT(gaTemp), (gdouble)local_vals.newWidth);
+    }
+    copyPlugInVals(&default_vals, &local_vals);
+    local_vals.image_ID = pivTemp.image_ID;
+    local_vals.prev = pivTemp.prev;
+    
+    if (local_vals.prev == 1)
+    {
+        preview_redraw();
+    }
+}
+
 /** Adding the preview area for the second release. */
 void preview_clicked_normal(GtkWidget *widget, gpointer data)
 {
@@ -564,6 +720,8 @@ void preview_clicked_normal(GtkWidget *widget, gpointer data)
     
     if ((local_vals.prev == 1) && (nChecked == 1))
     {
+        GtkWidget *gLabelWidge = gtk_frame_get_label_widget(GTK_FRAME(g_gwNormalsFrame));
+        gtk_label_set_text(GTK_LABEL(gLabelWidge), "Normal");
         gcNeedNormal = 'n';
         preview_redraw();
     }
@@ -582,6 +740,8 @@ void preview_clicked_lownormal(GtkWidget *widget, gpointer data)
     
     if ((local_vals.prev == 1) && (nChecked == 1))
     {
+        GtkWidget *gLabelWidge = gtk_frame_get_label_widget(GTK_FRAME(g_gwNormalsFrame));
+        gtk_label_set_text(GTK_LABEL(gLabelWidge), "Low Normal");
         gcNeedNormal = 'l';
         preview_redraw();
     }
@@ -600,6 +760,8 @@ void preview_clicked_mediumnormal(GtkWidget *widget, gpointer data)
     
     if ((local_vals.prev == 1) && (nChecked == 1))
     {
+        GtkWidget *gLabelWidge = gtk_frame_get_label_widget(GTK_FRAME(g_gwNormalsFrame));
+        gtk_label_set_text(GTK_LABEL(gLabelWidge), "Medium Normal");
         gcNeedNormal = 'm';
         preview_redraw();
     }
@@ -618,6 +780,8 @@ void preview_clicked_highnormal(GtkWidget *widget, gpointer data)
     
     if ((local_vals.prev == 1) && (nChecked == 1))
     {
+        GtkWidget *gLabelWidge = gtk_frame_get_label_widget(GTK_FRAME(g_gwNormalsFrame));
+        gtk_label_set_text(GTK_LABEL(gLabelWidge), "High Normal");
         gcNeedNormal = 'h';
         preview_redraw();
     }
@@ -636,6 +800,8 @@ void preview_clicked_supernormal(GtkWidget *widget, gpointer data)
     
     if ((local_vals.prev == 1) && (nChecked == 1))
     {
+        GtkWidget *gLabelWidge = gtk_frame_get_label_widget(GTK_FRAME(g_gwNormalsFrame));
+        gtk_label_set_text(GTK_LABEL(gLabelWidge), "Super Normal");
         gcNeedNormal = 's';
         preview_redraw();
     }
@@ -678,20 +844,21 @@ int is_3D_preview_active(void)
     return FALSE;
 }
 
-static void CreateOnePreviewFrame(GtkWidget *vbox, GtkWidget **preview, const gchar *szName)
+static GtkWidget *CreateOnePreviewFrame(GtkWidget *vbox, GtkWidget **preview, const gchar *szName)
 {
     GtkWidget *frame = NULL;
+    GtkWidget *labelFrame = NULL;
     GtkWidget *abox = NULL;
     
-    if (vbox == NULL) return;
+    if (vbox == NULL) return NULL;
 
-    frame = gtk_frame_new(szName);
-    gtk_box_pack_start(GTK_BOX(vbox), frame, 0, 0, 0);
-    gtk_widget_show(frame);
+    labelFrame = gtk_frame_new(szName);
+    gtk_box_pack_start(GTK_BOX(vbox), labelFrame, 0, 0, 0);
+    gtk_widget_show(labelFrame);
 
     abox = gtk_alignment_new(0.5, 0.5, 0.0, 0.0);
     gtk_container_set_border_width(GTK_CONTAINER (abox), 4);
-    gtk_container_add(GTK_CONTAINER(frame), abox);
+    gtk_container_add(GTK_CONTAINER(labelFrame), abox);
     gtk_widget_show(abox);
 
     frame = gtk_frame_new(NULL);
@@ -704,11 +871,14 @@ static void CreateOnePreviewFrame(GtkWidget *vbox, GtkWidget **preview, const gc
     gtk_drawing_area_size(GTK_DRAWING_AREA(*preview), PREVIEW_SIZE, PREVIEW_SIZE);
     gtk_container_add(GTK_CONTAINER(frame), *preview);
     gtk_widget_show(*preview);
+    
+    return labelFrame;
 }
 
 void CreateLeftPreviewFrames(GtkWidget *hbox)
 {
     GtkWidget *vbox = NULL;
+    GtkWidget *btn = NULL;
 
     if (hbox == NULL) return;
 
@@ -719,6 +889,16 @@ void CreateLeftPreviewFrames(GtkWidget *hbox)
     CreateOnePreviewFrame(vbox, &pDrawables.preview_d, "Diffuse");
     CreateOnePreviewFrame(vbox, &pDrawables.preview_ao, "Occlusion");
     CreateOnePreviewFrame(vbox, &pDrawables.preview_s, "Specular");
+    
+    btn = gtk_button_new_with_label("Restore Defaults");
+    if (btn != NULL)
+    {
+        gtk_signal_connect(GTK_OBJECT(btn), "clicked",
+                           GTK_SIGNAL_FUNC(restore_defaults_clicked), 0);
+
+        gtk_box_pack_start(GTK_BOX(vbox), btn, 0, 0, 0);
+        gtk_widget_show(btn);
+    }
 }
 
 void CreateRightPreviewToggleButton(GtkWidget *hbox)
@@ -733,7 +913,7 @@ void CreateRightPreviewToggleButton(GtkWidget *hbox)
     gtk_widget_show(vbox);
 
     CreateOnePreviewFrame(vbox, &pDrawables.preview_p, "Displacement");
-    CreateOnePreviewFrame(vbox, &pDrawables.preview_n, "Normals");
+    g_gwNormalsFrame = CreateOnePreviewFrame(vbox, &pDrawables.preview_n, "Normal");
 
     if (local_vals.prev == 1) {
         btn = gtk_toggle_button_new_with_label("Preview On");

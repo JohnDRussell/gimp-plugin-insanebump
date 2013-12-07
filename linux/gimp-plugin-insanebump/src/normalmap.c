@@ -919,8 +919,8 @@ gint32 normalmap(gint32 drawable_ID, gboolean preview_mode)
          }
       }
 
-      if(!preview_mode)
-         gimp_progress_update((double)(y - 1) / (double)(height - 2));
+      // if(!preview_mode)
+      //    gimp_progress_update((double)(y - 1) / (double)(height - 2));
    }
    
    if(nmapvals.conversion == CONVERT_HEIGHTMAP)
@@ -957,7 +957,7 @@ gint32 normalmap(gint32 drawable_ID, gboolean preview_mode)
 //   }
 //   else
 //   {
-      gimp_progress_update(100.0);
+      // gimp_progress_update(100.0);
       
       gimp_pixel_rgn_init(&dst_rgn, drawable, 0, 0, width, height, 1, 1);
       gimp_pixel_rgn_set_rect(&dst_rgn, dst, 0, 0, width, height);

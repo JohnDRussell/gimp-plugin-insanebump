@@ -55,8 +55,25 @@ typedef struct
 extern gchar _active;
 extern PlugInVals local_vals;
 extern int update_preview;
+extern int preview_progress_reset;
 extern gint dialog_is_init;
 extern PreviewDraws pDrawables;
+extern GtkWidget *g_gwNormalsFrame;
+extern GtkWidget *g_gwRemoveLtgBtn;
+extern GtkWidget *g_gwUpscaleBtn;
+extern GtkWidget *g_gwTileBtn;
+extern GtkWidget *g_gwEdgeBtn;
+extern GtkWidget *g_gwSmoothBtn;
+extern GtkWidget *g_gwNoiseBtn;
+extern GtkWidget *g_gwInvertBtn;
+extern GtkWidget *g_gwWidthSpin;
+extern GtkWidget *g_gwSpecDefSpin;
+extern GtkWidget *g_gwDepthSpin;
+extern GtkWidget *g_gwLargeDSpin;
+extern GtkWidget *g_gwMediumDSpin;
+extern GtkWidget *g_gwSmallDSpin;
+extern GtkWidget *g_gwShapeSpin;
+extern GtkWidget *g_gwAOSpin;
 
 /*  Public functions  */
 
@@ -73,5 +90,17 @@ void preview_clicked_occlusion(GtkWidget *widget, gpointer data);
 void preview_clicked_diffuse(GtkWidget *widget, gpointer data);
 void preview_clicked_specular(GtkWidget *widget, gpointer data);
 void preview_clicked_normal(GtkWidget *widget, gpointer data);
+void removeAllLayersExceptMain(void);
+
+/*  Public interface.c functions  */
+
+/*  Button callbacks. */
+void remlightbtn_clicked(GtkWidget *widget, gpointer data);
+void upscale_HD_clicked(GtkWidget *widget, gpointer data);
+void tile_clicked(GtkWidget *widget, gpointer data);
+void edge_enhancing_specular_clicked(GtkWidget *widget, gpointer data);
+void smooth_step_clicked(GtkWidget *widget, gpointer data);
+void noise_clicked(GtkWidget *widget, gpointer data);
+void invert_height_map_clicked(GtkWidget *widget, gpointer data);
 
 #endif /* __INTERFACE_H__ */

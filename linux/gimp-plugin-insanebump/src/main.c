@@ -45,7 +45,7 @@
 
 #define PLUG_IN_PROC    "plug-in-insanebump"
 #define PLUG_IN_BINARY  "gimp_plugin_insanebump"
-#define PLUG_IN_VERSION "1.0.0 - 8 November 2013"
+#define PLUG_IN_VERSION "1.0.6 - 7 December 2013"
 #define PLUG_IN_LOCALDIR "<Image>/Filters/Map"
 #define PLUG_IN_AUTHOR_LINEONE "Derby Russell <jdrussell51@gmail.com>"
 #define PLUG_IN_AUTHOR_LINETWO "Copyright 2013 Derby Russell"

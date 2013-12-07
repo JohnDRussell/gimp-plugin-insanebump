@@ -13,16 +13,12 @@
       <df name="po">
       </df>
       <df name="src">
-        <df name="Debug">
-        </df>
         <df name="objects">
           <in>cube.h</in>
           <in>quad.h</in>
           <in>sphere.h</in>
           <in>teapot.h</in>
           <in>torus.h</in>
-        </df>
-        <df name="Release">
         </df>
         <df name="win32c">
           <in>config.h</in>

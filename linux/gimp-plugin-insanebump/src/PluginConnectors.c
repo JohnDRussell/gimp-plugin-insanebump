@@ -66,8 +66,8 @@ static gint p_pdb_procedure_available (const gchar *proc_name)
                                       &l_nparams, &l_nreturn_vals,
                                       &l_params, &l_return_vals))
     {
-      /* procedure found in PDB */
-      return l_nparams;
+        /* procedure found in PDB */
+        return l_nparams;
     }
     return -1;
 }

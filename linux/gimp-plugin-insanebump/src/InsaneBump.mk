@@ -2,12 +2,12 @@
 ## Auto Generated makefile by CodeLite IDE
 ## any manual changes will be erased      
 ##
-## Debug
+## Release
 ProjectName            :=InsaneBump
-ConfigurationName      :=Debug
+ConfigurationName      :=Release
 WorkspacePath          := "C:\Documents and Settings\Derby Russell\My Documents\CodeLite\Projects\gimp-plugin-insanebump\linux\gimp-plugin-insanebump\src"
 ProjectPath            := "C:\Documents and Settings\Derby Russell\My Documents\CodeLite\Projects\gimp-plugin-insanebump\linux\gimp-plugin-insanebump\src"
-IntermediateDirectory  :=./Debug
+IntermediateDirectory  :=./Release
 OutDir                 := $(IntermediateDirectory)
 CurrentFileName        :=
 CurrentFilePath        :=
@@ -50,8 +50,8 @@ LibPath                := $(LibraryPathSwitch). $(LibraryPathSwitch). $(LibraryP
 AR       := ar rcus
 CXX      := gcc
 CC       := gcc
-CXXFLAGS :=  -g -Wall $(Preprocessors)
-CFLAGS   :=   $(Preprocessors)
+CXXFLAGS :=  -O2 -Wall $(Preprocessors)
+CFLAGS   :=  -O2 -Wall $(Preprocessors)
 
 
 ##
@@ -74,7 +74,7 @@ $(OutputFile): $(IntermediateDirectory)/.d $(Objects)
 	$(LinkerName) $(OutputSwitch)$(OutputFile) @$(ObjectsFileList) $(LibPath) $(Libs) $(LinkOptions)
 
 $(IntermediateDirectory)/.d:
-	@$(MakeDirCommand) "./Debug"
+	@$(MakeDirCommand) "./Release"
 
 PreBuild:
 
@@ -167,6 +167,6 @@ clean:
 	$(RM) $(IntermediateDirectory)/preview_area$(PreprocessSuffix)
 	$(RM) $(OutputFile)
 	$(RM) $(OutputFile).exe
-	$(RM) "C:\Documents and Settings\Derby Russell\My Documents\CodeLite\Projects\gimp-plugin-insanebump\linux\gimp-plugin-insanebump\src\.build-debug\InsaneBump"
+	$(RM) "C:\Documents and Settings\Derby Russell\My Documents\CodeLite\Projects\gimp-plugin-insanebump\linux\gimp-plugin-insanebump\src\.build-release\InsaneBump"
 
 

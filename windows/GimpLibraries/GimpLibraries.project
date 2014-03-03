@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CodeLite_Project Name="GimpLibraries" InternalType="Console">
+  <Plugins>
+    <Plugin Name="qmake">
+      <![CDATA[00010001N0005Debug000000000000]]>
+    </Plugin>
+  </Plugins>
+  <Description/>
+  <Dependencies/>
+  <VirtualDirectory Name="def">
+    <File Name="libgimpwidgets-2.0-0.def"/>
+    <File Name="libgimp-2.0-0.def"/>
+    <File Name="libgimpbase-2.0-0.def"/>
+    <File Name="libgimpcolor-2.0-0.def"/>
+    <File Name="libgimpconfig-2.0-0.def"/>
+    <File Name="libgimpmath-2.0-0.def"/>
+    <File Name="libgimpmodule-2.0-0.def"/>
+    <File Name="libgimpthumb-2.0-0.def"/>
+    <File Name="libgimpui-2.0-0.def"/>
+  </VirtualDirectory>
+  <VirtualDirectory Name="Text">
+    <File Name="ReadMe.txt"/>
+  </VirtualDirectory>
+  <Settings Type="Executable">
+    <GlobalSettings>
+      <Compiler Options="" C_Options="">
+        <IncludePath Value="."/>
+      </Compiler>
+      <Linker Options="">
+        <LibraryPath Value="."/>
+      </Linker>
+      <ResourceCompiler Options=""/>
+    </GlobalSettings>
+    <Configuration Name="Debug" CompilerType="gnu g++" DebuggerType="GNU gdb debugger" Type="Executable" BuildCmpWithGlobalSettings="append" BuildLnkWithGlobalSettings="append" BuildResWithGlobalSettings="append">
+      <Compiler Options="-g;-O0;-Wall" C_Options="-g;-O0;-Wall" Required="no" PreCompiledHeader="" PCHInCommandLine="no" UseDifferentPCHFlags="no" PCHFlags="">
+        <IncludePath Value="."/>
+      </Compiler>
+      <Linker Options="" Required="no"/>
+      <ResourceCompiler Options="" Required="no"/>
+      <General OutputFile="$(IntermediateDirectory)/$(ProjectName)" IntermediateDirectory="./Debug" Command="./$(ProjectName)" CommandArguments="" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="$(IntermediateDirectory)" PauseExecWhenProcTerminates="yes"/>
+      <Environment EnvVarSetName="&lt;Use Defaults&gt;" DbgSetName="&lt;Use Defaults&gt;">
+        <![CDATA[]]>
+      </Environment>
+      <Debugger IsRemote="no" RemoteHostName="" RemoteHostPort="" DebuggerPath="">
+        <PostConnectCommands/>
+        <StartupCommands/>
+      </Debugger>
+      <PreBuild>
+        <Command Enabled="yes">mkdir c:\gtk\lib\gimp-2.0</Command>
+        <Command Enabled="yes">copy libgimp-2.0-0.def c:\gtk\lib\gimp-2.0</Command>
+        <Command Enabled="yes">copy libgimpbase-2.0-0.def c:\gtk\lib\gimp-2.0</Command>
+        <Command Enabled="yes">copy libgimpcolor-2.0-0.def c:\gtk\lib\gimp-2.0</Command>
+        <Command Enabled="yes">copy libgimpconfig-2.0-0.def c:\gtk\lib\gimp-2.0</Command>
+        <Command Enabled="yes">copy libgimpmath-2.0-0.def c:\gtk\lib\gimp-2.0</Command>
+        <Command Enabled="yes">copy libgimpmodule-2.0-0.def c:\gtk\lib\gimp-2.0</Command>
+        <Command Enabled="yes">copy libgimpthumb-2.0-0.def c:\gtk\lib\gimp-2.0</Command>
+        <Command Enabled="yes">copy libgimpui-2.0-0.def c:\gtk\lib\gimp-2.0</Command>
+        <Command Enabled="yes">copy libgimpwidgets-2.0-0.def c:\gtk\lib\gimp-2.0</Command>
+        <Command Enabled="yes">dlltool -d libgimp-2.0-0.def -D "C:\Program Files\GIMP-2.0\bin\libgimp-2.0-0.dll" -l "C:\gtk\lib\gimp-2.0\libgimp.dll.a"</Command>
+        <Command Enabled="yes">dlltool -d libgimpbase-2.0-0.def -D "C:\Program Files\GIMP-2.0\bin\libgimpbase-2.0-0.dll" -l "C:\gtk\lib\gimp-2.0\libgimpbase.dll.a"</Command>
+        <Command Enabled="yes">dlltool -d libgimpcolor-2.0-0.def -D "C:\Program Files\GIMP-2.0\bin\libgimpcolor-2.0-0.dll" -l "C:\gtk\lib\gimp-2.0\libgimpcolor.dll.a"</Command>
+        <Command Enabled="yes">dlltool -d libgimpconfig-2.0-0.def -D "C:\Program Files\GIMP-2.0\bin\libgimpconfig-2.0-0.dll" -l "C:\gtk\lib\gimp-2.0\libgimpconfig.dll.a"</Command>
+        <Command Enabled="yes">dlltool -d libgimpmath-2.0-0.def -D "C:\Program Files\GIMP-2.0\bin\libgimpmath-2.0-0.dll" -l "C:\gtk\lib\gimp-2.0\libgimpmath.dll.a"</Command>
+        <Command Enabled="yes">dlltool -d libgimpmodule-2.0-0.def -D "C:\Program Files\GIMP-2.0\bin\libgimpmodule-2.0-0.dll" -l "C:\gtk\lib\gimp-2.0\libgimpmodule.dll.a"</Command>
+        <Command Enabled="yes">dlltool -d libgimpthumb-2.0-0.def -D "C:\Program Files\GIMP-2.0\bin\libgimpthumb-2.0-0.dll" -l "C:\gtk\lib\gimp-2.0\libgimpthumb.dll.a"</Command>
+        <Command Enabled="yes">dlltool -d libgimpui-2.0-0.def -D "C:\Program Files\GIMP-2.0\bin\libgimpui-2.0-0.dll" -l "C:\gtk\lib\gimp-2.0\libgimpui.dll.a"</Command>
+        <Command Enabled="yes">dlltool -d libgimpwidgets-2.0-0.def -D "C:\Program Files\GIMP-2.0\bin\libgimpwidgets-2.0-0.dll" -l "C:\gtk\lib\gimp-2.0\libgimpwidgets.dll.a"</Command>
+      </PreBuild>
+      <PostBuild/>
+      <CustomBuild Enabled="no">
+        <RebuildCommand/>
+        <CleanCommand/>
+        <BuildCommand/>
+        <PreprocessFileCommand/>
+        <SingleFileCommand/>
+        <MakefileGenerationCommand/>
+        <ThirdPartyToolName>None</ThirdPartyToolName>
+        <WorkingDirectory/>
+      </CustomBuild>
+      <AdditionalRules>
+        <CustomPostBuild/>
+        <CustomPreBuild/>
+      </AdditionalRules>
+      <Completion EnableCpp11="no">
+        <ClangCmpFlagsC/>
+        <ClangCmpFlags/>
+        <ClangPP/>
+        <SearchPaths/>
+      </Completion>
+    </Configuration>
+    <Configuration Name="Release" CompilerType="gnu g++" DebuggerType="GNU gdb debugger" Type="" BuildCmpWithGlobalSettings="append" BuildLnkWithGlobalSettings="append" BuildResWithGlobalSettings="append">
+      <Compiler Options="-O2;-Wall" C_Options="-O2;-Wall" Required="yes" PreCompiledHeader="" PCHInCommandLine="no" UseDifferentPCHFlags="no" PCHFlags="">
+        <IncludePath Value="."/>
+      </Compiler>
+      <Linker Options="" Required="yes"/>
+      <ResourceCompiler Options="" Required="no"/>
+      <General OutputFile="$(IntermediateDirectory)/$(ProjectName)" IntermediateDirectory="./Release" Command="./$(ProjectName)" CommandArguments="" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="$(IntermediateDirectory)" PauseExecWhenProcTerminates="yes"/>
+      <Environment EnvVarSetName="&lt;Use Defaults&gt;" DbgSetName="&lt;Use Defaults&gt;">
+        <![CDATA[]]>
+      </Environment>
+      <Debugger IsRemote="no" RemoteHostName="" RemoteHostPort="" DebuggerPath="">
+        <PostConnectCommands/>
+        <StartupCommands/>
+      </Debugger>
+      <PreBuild/>
+      <PostBuild/>
+      <CustomBuild Enabled="no">
+        <RebuildCommand/>
+        <CleanCommand/>
+        <BuildCommand/>
+        <PreprocessFileCommand/>
+        <SingleFileCommand/>
+        <MakefileGenerationCommand/>
+        <ThirdPartyToolName>None</ThirdPartyToolName>
+        <WorkingDirectory/>
+      </CustomBuild>
+      <AdditionalRules>
+        <CustomPostBuild/>
+        <CustomPreBuild/>
+      </AdditionalRules>
+      <Completion EnableCpp11="no">
+        <ClangCmpFlagsC/>
+        <ClangCmpFlags/>
+        <ClangPP/>
+        <SearchPaths/>
+      </Completion>
+    </Configuration>
+  </Settings>
+</CodeLite_Project>
